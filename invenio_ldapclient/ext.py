@@ -47,6 +47,7 @@ class InvenioLDAPClient(object):
             def ldap_login_view_setup():
                 from .views import ldap_login
                 app.view_functions['security.login'] = ldap_login
+                app.extensions['security'].login_manager.login_view = 'invenio_ldapclient.ldap_login'
                 app.config['SECURITY_CONFIRMABLE'] = False
                 app.config['SECURITY_RECOVERABLE'] = False
                 app.config['SECURITY_REGISTERABLE'] = False
