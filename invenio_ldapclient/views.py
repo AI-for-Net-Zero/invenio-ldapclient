@@ -13,6 +13,7 @@ from invenio_db import db
 from invenio_userprofiles.models import UserProfile
 from ldap3 import ALL, ALL_ATTRIBUTES, Connection, Server
 from werkzeug.local import LocalProxy
+from django.utils.http import url_has_allowed_host_and_scheme
 
 from .forms import login_form_factory
 
@@ -161,7 +162,10 @@ def ldap_login():
                 next_page = request.args.get('next')
 
                 # Only allow relative URL for security
-                if not next_page or next_page.startswith('http'):
+                #if not next_page or next_page.startswith('http'):
+                if not url_has_allowed_host_and_scheme(next_page,
+                                                       allowed_hosts = None,
+                                                       require_https = False):
                     next_page = app.config['SECURITY_POST_LOGIN_VIEW']
 
                 connection.unbind()
