@@ -37,12 +37,12 @@ for reqs in extras_require.values():
     extras_require['all'].extend(reqs)
 
 setup_requires = [
-    'Babel==1.3',
+    'Babel>=1.3',
     'pytest-runner>=2.6.2',
 ]
 
 install_requires = [
-    'Flask-BabelEx==0.9.3',
+    'Flask-BabelEx>=0.9.2',
     'invenio-accounts>=1.0.1',
     'invenio-db>=1.0.2',
     'invenio-userprofiles==1.0.1',
