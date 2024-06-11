@@ -65,3 +65,5 @@ target/
 .*.sw?
 ## Sublime-Text
 *.sublime-*
+
+.venv
