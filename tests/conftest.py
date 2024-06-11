@@ -17,7 +17,7 @@ from flask import Flask
 from flask_babelex import Babel
 
 
-@pytest.yield_fixture()
+@pytest.fixture()
 def instance_path():
     """Temporary instance path."""
     path = tempfile.mkdtemp()
