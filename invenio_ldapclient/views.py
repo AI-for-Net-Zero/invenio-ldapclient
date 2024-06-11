@@ -165,7 +165,9 @@ def ldap_login():
                 #if not next_page or next_page.startswith('http'):
                 if not url_has_allowed_host_and_scheme(next_page,
                                                        allowed_hosts = None,
-                                                       require_https = False):
+                                                       require_https = \
+                                                       app.config['LDAPCLIENT_USE_SSL']):
+                    
                     next_page = app.config['SECURITY_POST_LOGIN_VIEW']
 
                 connection.unbind()
