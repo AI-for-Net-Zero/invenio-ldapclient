@@ -66,15 +66,17 @@ def test_init_non_exclusive_LDAP_auth():
     app = Flask('testapp')
     app.config['LDAPCLIENT_EXCLUSIVE_AUTHENTICATION'] = False
     ext = InvenioLDAPClient(app)
-    #<----- LB - calling init_app 2nd time attempts to re-register blueprint
-    #causing flask.blueprints to raise ValueError.
+    #<----- LB - init_app(app) is called inside class cnstr
+    # calling 2nd time attempts to re-register .views.blueprint
+    # which prompts flask.blueprints to raise ValueError.
+    #
     #ext.init_app(app)
     #----->
     assert app.config['LDAPCLIENT_EXCLUSIVE_AUTHENTICATION'] is False
     #<----- LB - pytest.raises: message -> match (v8.2.2)
     #with pytest.raises(KeyError, message='SECURITY_LOGIN_USER_TEMPLATE'):
     #----->
-    with pytest.raises(KeyError, match = 'SECURITY_LOGIN_USER_TEMPLATE'):
+    with pytest.raises(KeyError, match='SECURITY_LOGIN_USER_TEMPLATE'):
         assert app.config['SECURITY_LOGIN_USER_TEMPLATE']
 
 

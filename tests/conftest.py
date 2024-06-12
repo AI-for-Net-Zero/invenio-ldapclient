@@ -37,7 +37,7 @@ def base_app(instance_path):
     return app_
 
 
-@pytest.yield_fixture()
+@pytest.fixture()
 def app(base_app):
     """Flask application fixture."""
     with base_app.app_context():
