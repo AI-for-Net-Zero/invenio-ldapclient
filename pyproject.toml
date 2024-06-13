@@ -32,7 +32,7 @@ name = "Galter Health Sciences Library & Learning Center"
 email = "galter-is@listserv.it.northwestern.edu"
 
 [project.optional-dependencies]
-test = ["pytest"]
+dev = ["pytest", "coverage", "sphinx"]
 
 [build-system]
 requires = ["setuptools"]
