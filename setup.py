@@ -46,8 +46,7 @@ install_requires = [
     'invenio-accounts>=1.0.1',
     'invenio-db>=1.0.2',
     'invenio-userprofiles==1.0.1',
-    'ldap3>=2.5.0,<3.0.0',
-    'Django==5.0.6'
+    'ldap3>=2.5.0,<3.0.0'
 ]
 
 packages = find_packages()
