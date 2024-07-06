@@ -1,0 +1,49 @@
+[project]
+name = "invenio-ldapclient"
+dynamic = ["version", "readme"]
+license = {file = "LICENSE"}
+
+dependencies = [
+	     "Flask-BabelEx>=0.9.2",
+	     "invenio-accounts>=4.0.0,<5",
+	     "invenio-db>=1.0.2",
+	     "invenio-userprofiles>=2.0.0",
+	     "ldap3>=2.5.0,<3.0.0",
+	     ]
+	     
+classifiers=[
+        'Environment :: Web Environment',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: MIT',
+        'Operating System :: OS Independent',
+        'Programming Language :: Python',
+        'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
+        'Topic :: Software Development :: Libraries :: Python Modules',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.5',
+        'Development Status :: 1 - Planning',
+    ]
+
+[[project.authors]]
+name = "Galter Health Sciences Library & Learning Center"
+email = "galter-is@listserv.it.northwestern.edu"
+
+[project.optional-dependencies]
+dev = ["pytest", "coverage", "sphinx"]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["invenio_ldapclient"]
+
+[tool.setuptools.dynamic]
+version = {attr = "invenio_ldapclient.__version__"}
+readme = {file = "README.rst"}
+#AttributeError: invenio_ldapclient has no attribute __version__
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
