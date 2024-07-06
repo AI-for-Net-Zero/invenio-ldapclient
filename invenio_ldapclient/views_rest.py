@@ -1,7 +1,6 @@
 from flask import current_app
 from flask.views import MethodView
 
-
 from .forms import login_form_factory
 from .views import _ldap_connection
 

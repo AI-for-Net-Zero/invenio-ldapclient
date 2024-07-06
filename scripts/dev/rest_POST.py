@@ -40,7 +40,7 @@ app.config.update(
     LDAPCLIENT_USERNAME_PLACEHOLDER = 'Username'
 )
 
-Babel(app)
+#Babel(app)
 InvenioAccountsREST(app)
 bp = create_blueprint(app)
 app.register_blueprint(bp, url_prefix = '/api')
