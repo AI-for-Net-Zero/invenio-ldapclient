@@ -13,9 +13,10 @@ from invenio_db import db
 from invenio_userprofiles.models import UserProfile
 from ldap3 import ALL, ALL_ATTRIBUTES, Connection, Server
 from werkzeug.local import LocalProxy
-from django.utils.http import url_has_allowed_host_and_scheme
-
+#from django.utils.http import url_has_allowed_host_and_scheme
+from sqlalchemy import select
 from .forms import login_form_factory
+
 
 _security = LocalProxy(lambda: app.extensions['security'])
 _datastore = LocalProxy(lambda: _security.datastore)
@@ -122,9 +123,10 @@ def _find_or_register_user(connection, username):
         return None
 
     # Try by username first
-    user = User.query.join(UserProfile).filter(
-        UserProfile.username == username
-    ).one_or_none()
+    #user = User.query.join(UserProfile).filter(
+    #    UserProfile.username == username
+    #).one_or_none()
+    user = User.query.filter_by(username=username).one_or_none()
 
     # Try by email next
     if not user and app.config['LDAPCLIENT_FIND_BY_EMAIL']:
@@ -163,11 +165,11 @@ def ldap_login():
 
                 # Only allow relative URL for security
                 #if not next_page or next_page.startswith('http'):
-                if not url_has_allowed_host_and_scheme(next_page,
-                                                       allowed_hosts = None,
-                                                       require_https = \
-                                                       app.config['LDAPCLIENT_USE_SSL']):
-                    
+                #if not url_has_allowed_host_and_scheme(next_page,
+                #                                       allowed_hosts = None,
+                #                                       require_https = \
+                #                                       app.config['LDAPCLIENT_USE_SSL']):
+                if not next_page or next_page.startswith('http'): 
                     next_page = app.config['SECURITY_POST_LOGIN_VIEW']
 
                 connection.unbind()
