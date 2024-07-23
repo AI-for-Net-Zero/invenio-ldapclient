@@ -96,15 +96,15 @@ def _register_or_update_user(entries, user_account=None):
         kwargs = dict(email=email, active=True, password=uuid.uuid4().hex)
         _datastore.create_user(**kwargs)
         user_account = User.query.filter_by(email=email).one_or_none()
-        profile = UserProfile(user_id=int(user_account.get_id()))
+        #profile = UserProfile(user_id=int(user_account.get_id()))
     else:
         user_account.email = email
         db.session.add(user_account)
         profile = user_account.profile
 
-    profile.full_name = full_name
-    profile.username = username
-    db.session.add(profile)
+    #profile.full_name = full_name
+    user_account.username = username
+    db.session.add(user_account)
     return user_account
 
 
