@@ -100,7 +100,7 @@ def _register_or_update_user(entries, user_account=None):
     else:
         user_account.email = email
         db.session.add(user_account)
-        profile = user_account.profile
+        #profile = user_account.profile
 
     #profile.full_name = full_name
     user_account.username = username
