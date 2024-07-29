@@ -14,7 +14,7 @@ import tempfile
 
 import pytest
 from flask import Flask
-from flask_babelex import Babel
+from flask_babel import Babel
 
 
 @pytest.fixture()
