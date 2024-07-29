@@ -13,7 +13,6 @@ amqp==5.2.0
 babel==2.15.0
     # via
     #   flask-babel
-    #   flask-babelex
     #   invenio-i18n
 billiard==4.2.0
     # via celery
@@ -45,7 +44,7 @@ click-plugins==1.1.1
     # via celery
 click-repl==0.3.0
     # via celery
-cryptography==42.0.8
+cryptography==43.0.0
     # via invenio-accounts
 dnspython==2.6.1
     # via email-validator
@@ -55,7 +54,6 @@ flask==2.2.5
     # via
     #   flask-alembic
     #   flask-babel
-    #   flask-babelex
     #   flask-breadcrumbs
     #   flask-celeryext
     #   flask-collect-invenio
@@ -78,8 +76,6 @@ flask-babel==4.0.0
     # via
     #   flask-security-invenio
     #   invenio-i18n
-flask-babelex==0.9.4
-    # via invenio-ldapclient (pyproject.toml)
 flask-breadcrumbs==0.5.1
     # via invenio-ldapclient (pyproject.toml)
 flask-celeryext==0.5.0
@@ -116,7 +112,7 @@ greenlet==3.0.3
     # via sqlalchemy
 idna==3.7
     # via email-validator
-importlib-metadata==8.0.0
+importlib-metadata==8.2.0
     # via invenio-base
 importlib-resources==6.4.0
     # via invenio-base
@@ -151,7 +147,7 @@ invenio-logging[sentry-sdk]==2.1.1
     # via invenio-rest
 invenio-mail==2.1.1
     # via invenio-accounts
-invenio-rest==1.3.0
+invenio-rest==1.3.1
     # via invenio-accounts
 invenio-theme==3.2.0
     # via invenio-accounts
@@ -169,7 +165,6 @@ jinja2==3.1.4
     # via
     #   flask
     #   flask-babel
-    #   flask-babelex
 jsmin==3.0.1
     # via invenio-theme
 kombu==5.3.7
@@ -222,7 +217,7 @@ pywebpack==2.0.0
     #   invenio-assets
 redis==5.0.7
     # via invenio-celery
-sentry-sdk[flask]==1.45.0
+sentry-sdk[flask]==1.45.1
     # via invenio-logging
 simplekv==0.14.1
     # via
@@ -234,9 +229,7 @@ six==1.16.0
     #   flask-kvsession-invenio
     #   python-dateutil
 speaklater==1.3
-    # via
-    #   flask-babelex
-    #   flask-security-invenio
+    # via flask-security-invenio
 sqlalchemy[asyncio]==1.4.52
     # via
     #   alembic

@@ -4,7 +4,6 @@ dynamic = ["version", "readme", "dependencies"]
 license = {file = "LICENSE"}
 
 #dependencies = [
-#	     "Flask-BabelEx>=0.9.2",
 #	     "invenio-accounts>=4.0.0,<5",
 #	     "invenio-db>=1.0.2",
 #	     "invenio-userprofiles>=2.0.0",
