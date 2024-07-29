@@ -13,8 +13,8 @@ from invenio_db import db
 from invenio_userprofiles.models import UserProfile
 from ldap3 import ALL, ALL_ATTRIBUTES, Connection, Server
 from werkzeug.local import LocalProxy
-#from django.utils.http import url_has_allowed_host_and_scheme
 from sqlalchemy import select
+from .django import url_has_allowed_host_and_scheme
 from .forms import login_form_factory
 
 
@@ -165,11 +165,11 @@ def ldap_login():
 
                 # Only allow relative URL for security
                 #if not next_page or next_page.startswith('http'):
-                #if not url_has_allowed_host_and_scheme(next_page,
-                #                                       allowed_hosts = None,
-                #                                       require_https = \
-                #                                       app.config['LDAPCLIENT_USE_SSL']):
-                if not next_page or next_page.startswith('http'): 
+                if not url_has_allowed_host_and_scheme(next_page,
+                                                       allowed_hosts = None,
+                                                       require_https = \
+                                                       app.config['LDAPCLIENT_USE_SSL']):
+                #if not next_page or next_page.startswith('http'): 
                     next_page = app.config['SECURITY_POST_LOGIN_VIEW']
 
                 connection.unbind()
