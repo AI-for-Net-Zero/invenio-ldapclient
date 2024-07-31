@@ -10,7 +10,7 @@ from flask import flash, redirect, render_template, request
 from flask_security import login_user
 from invenio_accounts.models import User
 from invenio_db import db
-from invenio_userprofiles.models import UserProfile
+#from invenio_userprofiles.models import UserProfile
 from ldap3 import ALL, ALL_ATTRIBUTES, Connection, Server, Tls
 from werkzeug.local import LocalProxy
 from sqlalchemy import select
@@ -82,12 +82,11 @@ def _ldap_client_server_objects():
         if server_info.get('tls', None):
             tls = Tls(**server_info['tls'])
             ldap_server_kwargs.update(tls=tls)
-        
-        server = Server(hostname, **ldap_server_kwargs)
 
+        server = Server(hostname, **ldap_server_kwargs)
         yield server
 
-def _ldap_connection(form):      
+def _ldap_connection(form, username_attr, bind_base):      
     """
     Sequentially tries config['LDAPCLIENT_SERVER_INFO'] and either returns a bound connection,
     or None
@@ -98,12 +97,13 @@ def _ldap_connection(form):
         return None
 
     ldap_user = "{}={},{}".format(
-        app.config['LDAPCLIENT_USERNAME_ATTRIBUTE'],
+        username_attr,
         form_user,
-        app.config['LDAPCLIENT_BIND_BASE']
+        bind_base
     )
 
     for server in _ldap_client_server_objects():
+        
         connection = Connection(server, ldap_user, form_pass)
         if connection and connection.bind():
             ''' +++++  Test for group membership
@@ -214,7 +214,7 @@ def ldap_login():
                 if not url_has_allowed_host_and_scheme(next_page,
                                                        allowed_hosts = None,
                                                        require_https = \
-                                                       app.config['LDAPCLIENT_USE_SSL']):
+                                                       app.config['LDAPCLIENT_REQUIRE_HTTPS']):
                 #if not next_page or next_page.startswith('http'): 
                     next_page = app.config['SECURITY_POST_LOGIN_VIEW']
 

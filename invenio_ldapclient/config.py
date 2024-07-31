@@ -25,6 +25,8 @@ LDAPCLIENT_AUTHENTICATION = True
 LDAPCLIENT_FIND_BY_EMAIL = True
 """Allow looking users up by email if not found by username."""
 
+LDAPCLIENT_REQUIRE_HTTPS = True
+
 LDAPCLIENT_AUTO_REGISTRATION = True
 """Automatically register users and populate their attributes from LDAP."""
 
