@@ -40,17 +40,29 @@ LDAPCLIENT_LOGIN_USER_TEMPLATE = 'invenio_ldapclient/login_user.html'
 LDAPCLIENT_USERNAME_PLACEHOLDER = 'Username'
 """Placeholder for the login form username field."""
 
-LDAPCLIENT_SERVER_HOSTNAME = 'example.com'
-"""LDAP server hostname. Your application MUST override this."""
+LDAPCLIENT_SERVER_INFO = [{'hostname': 'example.com',
+                           'port': 389,
+                           'use_ssl': True,
+                           'tsl': dict(),
+                           'groups': None}]
+""" 
+List of dicts containing at least the keys hostname, port & use_ssl.  When a list
+is supplied, connection.bind() is tested sequentially.  If use_ssl = True, TLS options should
+be passed as nested dict.  Test membership of groups (list), per-server.
+"""
 
-LDAPCLIENT_SERVER_PORT = 389
-"""LDAP server port."""
 
-LDAPCLIENT_USE_SSL = False
-"""Use SSL for LDAP connection."""
+#LDAPCLIENT_SERVER_HOSTNAME = 'example.com'
+#"""LDAP server hostname. Your application MUST override this."""
 
-LDAPCLIENT_TLS = None
-"""TLS options for LDAP connection server."""
+#LDAPCLIENT_SERVER_PORT = 389
+#"""LDAP server port."""
+
+#LDAPCLIENT_USE_SSL = False
+#"""Use SSL for LDAP connection."""
+
+#LDAPCLIENT_TLS = None
+#"""TLS options for LDAP connection server."""
 
 LDAPCLIENT_CUSTOM_CONNECTION = None
 """

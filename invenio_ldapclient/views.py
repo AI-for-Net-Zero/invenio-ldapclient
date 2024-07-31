@@ -11,7 +11,7 @@ from flask_security import login_user
 from invenio_accounts.models import User
 from invenio_db import db
 from invenio_userprofiles.models import UserProfile
-from ldap3 import ALL, ALL_ATTRIBUTES, Connection, Server
+from ldap3 import ALL, ALL_ATTRIBUTES, Connection, Server, Tls
 from werkzeug.local import LocalProxy
 from sqlalchemy import select
 from .django import url_has_allowed_host_and_scheme
@@ -33,7 +33,7 @@ def _commit(response=None):
     _datastore.commit()
     return response
 
-
+'''
 def _ldap_connection(form):
     """Make LDAP connection based on configuration."""
     if not form.validate_on_submit():
@@ -44,6 +44,7 @@ def _ldap_connection(form):
     if not form_user or not form_pass:
         return False
 
+    #use a plug-in?
     if app.config['LDAPCLIENT_CUSTOM_CONNECTION']:
         return app.config['LDAPCLIENT_CUSTOM_CONNECTION'](
             form_user, form_pass
@@ -67,7 +68,52 @@ def _ldap_connection(form):
         app.config['LDAPCLIENT_BIND_BASE']
     )
     return Connection(server, ldap_user, form_pass)
+'''
+def _ldap_client_server_objects():
+    for server_info in app.config['LDAPCLIENT_SERVER_INFO']:
+        hostname = server_info['hostname']
+        
+        ldap_server_kwargs = dict(
+            port = server_info['port'],
+            use_ssl = server_info['use_ssl'],
+            get_info = ALL
+        )
 
+        if server_info.get('tls', None):
+            tls = Tls(**server_info['tls'])
+            ldap_server_kwargs.update(tls=tls)
+        
+        server = Server(hostname, **ldap_server_kwargs)
+
+        yield server
+
+def _ldap_connection(form):      
+    """
+    Sequentially tries config['LDAPCLIENT_SERVER_INFO'] and either returns a bound connection,
+    or None
+    """
+    form_pass = form.password.data
+    form_user = form.username.data
+    if not form_user or not form_pass:
+        return None
+
+    ldap_user = "{}={},{}".format(
+        app.config['LDAPCLIENT_USERNAME_ATTRIBUTE'],
+        form_user,
+        app.config['LDAPCLIENT_BIND_BASE']
+    )
+
+    for server in _ldap_client_server_objects():
+        connection = Connection(server, ldap_user, form_pass)
+        if connection and connection.bind():
+            ''' +++++  Test for group membership
+            if member:
+                return connection
+            '''
+            return connection
+
+    return None
+         
 
 def _search_ldap(connection, username):
     """Fetch the user entry from LDAP."""
