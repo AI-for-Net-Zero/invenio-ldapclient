@@ -37,7 +37,13 @@ class InvenioLDAPClient(object):
 
         for k in dir(config):
             if k.startswith('LDAPCLIENT_'):
-                app.config.setdefault(k, getattr(config, k))
+                '''
+                dict instances are mutable. Copy, o/w unit tests will mutate .config
+                '''
+                if isinstance( getattr(config, k), dict):
+                    app.config.setdefault(k, getattr(config, k).copy() )
+                else:
+                    app.config.setdefault(k, getattr(config, k))
 
         if not app.config['LDAPCLIENT_AUTHENTICATION']:
             return

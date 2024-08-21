@@ -15,6 +15,7 @@ import tempfile
 import pytest
 from flask import Flask
 from flask_babel import Babel
+from invenio_i18n import InvenioI18N
 
 
 @pytest.fixture()
@@ -26,19 +27,17 @@ def instance_path():
 
 
 @pytest.fixture()
-def base_app(instance_path):
-    """Flask application fixture."""
+def app(instance_path):
     app_ = Flask('testapp', instance_path=instance_path)
+
     app_.config.update(
         SECRET_KEY='SECRET_KEY',
         TESTING=True,
     )
+
     Babel(app_)
-    return app_
+    InvenioI18N(app_)
 
-
-@pytest.fixture()
-def app(base_app):
-    """Flask application fixture."""
-    with base_app.app_context():
-        yield base_app
+    with app_.app_context():
+        yield app_
+            

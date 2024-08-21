@@ -25,7 +25,8 @@ LDAPCLIENT_AUTHENTICATION = True
 LDAPCLIENT_FIND_BY_EMAIL = True
 """Allow looking users up by email if not found by username."""
 
-LDAPCLIENT_REQUIRE_HTTPS = True
+LDAPCLIENT_REQUIRE_HTTPS = False
+"""When checking redirect in views.ldap_login"""
 
 LDAPCLIENT_AUTO_REGISTRATION = True
 """Automatically register users and populate their attributes from LDAP."""
@@ -42,29 +43,23 @@ LDAPCLIENT_LOGIN_USER_TEMPLATE = 'invenio_ldapclient/login_user.html'
 LDAPCLIENT_USERNAME_PLACEHOLDER = 'Username'
 """Placeholder for the login form username field."""
 
-LDAPCLIENT_SERVER_INFO = [{'hostname': 'example.com',
-                           'port': 389,
-                           'use_ssl': True,
-                           'tsl': dict(),
-                           'groups': None}]
-""" 
-List of dicts containing at least the keys hostname, port & use_ssl.  When a list
-is supplied, connection.bind() is tested sequentially.  If use_ssl = True, TLS options should
-be passed as nested dict.  Test membership of groups (list), per-server.
-"""
-
+LDAPCLIENT_SERVERS = [{'host': 'example.com',
+                       'port': 389,
+                       'use_ssl': False,
+                       'tls': None},]
+                       
 
 #LDAPCLIENT_SERVER_HOSTNAME = 'example.com'
-#"""LDAP server hostname. Your application MUST override this."""
+"""LDAP server hostname. Your application MUST override this."""
 
 #LDAPCLIENT_SERVER_PORT = 389
-#"""LDAP server port."""
+"""LDAP server port."""
 
 #LDAPCLIENT_USE_SSL = False
-#"""Use SSL for LDAP connection."""
+"""Use SSL for LDAP connection."""
 
 #LDAPCLIENT_TLS = None
-#"""TLS options for LDAP connection server."""
+"""TLS options for LDAP connection server."""
 
 LDAPCLIENT_CUSTOM_CONNECTION = None
 """
@@ -91,13 +86,23 @@ user account will be used.
 # LDAPCLIENT_ADMIN_PASSWORD = 'NOTIT'
 """Admin LDAP account password."""
 
-LDAPCLIENT_SEARCH_BASE = 'dc=example,dc=com'
+LDAPCLIENT_SEARCH = {'bind_base': 'ou=people,dc=example,dc=com',
+                     'search_base': 'dc=example,dc=com',
+                     'search_filter': None,
+                     'group_filters': [],
+                     'username_attribute': 'uid',
+                     'email_attribute': 'mail',
+                     'fullname_attribute': 'displayName',
+                     'search_attributes': None,
+                     }
+
+#LDAPCLIENT_SEARCH_BASE = 'dc=example,dc=com'
 """Base for binding to LDAP. Your application MUST override this."""
 
-LDAPCLIENT_BIND_BASE = 'ou=people,dc=example,dc=com'
+#LDAPCLIENT_BIND_BASE = 'ou=people,dc=example,dc=com'
 """Base for binding to LDAP. Your application MUST override this."""
 
-LDAPCLIENT_USERNAME_ATTRIBUTE = 'uid'
+#LDAPCLIENT_USERNAME_ATTRIBUTE = 'uid'
 """
 Username LDAP attribute.
 Prepended to ``LDAPCLIENT_BIND_BASE`` with the username from the log in form
@@ -106,11 +111,13 @@ for binding, resulting in:
     ``uid=FORM-USERNAME,ou=people,dc=example,dc=com``
 """
 
-LDAPCLIENT_EMAIL_ATTRIBUTE = 'mail'
+#LDAPCLIENT_EMAIL_ATTRIBUTE = 'mail'
 """Email LDAP attribute."""
 
-LDAPCLIENT_FULL_NAME_ATTRIBUTE = 'displayName'
+#LDAPCLIENT_FULL_NAME_ATTRIBUTE = 'displayName'
 """Full name LDAP attribute."""
 
-LDAPCLIENT_SEARCH_ATTRIBUTES = None
+#LDAPCLIENT_SEARCH_ATTRIBUTES = None
 """List of attributes to fetch from LDAP. Defaults to all of them (``'*'``)."""
+
+
