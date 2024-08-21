@@ -1,15 +1,15 @@
 [project]
 name = "invenio-ldapclient"
-dynamic = ["version", "readme", "dependencies"]
+dynamic = ["version", "readme"]#, "dependencies"]
 license = {file = "LICENSE"}
 
-#dependencies = [
-#	     "invenio-accounts>=4.0.0",
-#	     "invenio-db>=1.0.2",
-#	     "invenio-userprofiles>=2.0.0",
-#	     "ldap3>=2.5.0",
-#	     "Flask-Breadcrumbs"
-#	     ]
+dependencies = [
+	     "invenio-accounts>=4.0.0",
+	     "invenio-db>=1.0.2",
+	     "invenio-userprofiles>=2.0.0",
+	     "ldap3>=2.5.0",
+	     "Flask-Breadcrumbs"
+	     ]
 
 
 	     
@@ -40,12 +40,12 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-packages = ["invenio_ldapclient"]
+packages = ["invenio_ldapclient", "invenio_ldapclient.django"]
 
 [tool.setuptools.dynamic]
 version = {attr = "invenio_ldapclient.__version__"}
 readme = {file = "README.rst"}
-dependencies = {file = ["requirements.txt"]}
+#dependencies = {file = ["requirements.txt"]}
 #AttributeError: invenio_ldapclient has no attribute __version__
 
 [tool.pytest.ini_options]
