@@ -129,12 +129,15 @@ def _register_or_update_user(entries, user_account=None):
 
         user_account.username = username
         if 'fullname_attribute' in current_app.config['LDAPCLIENT_SEARCH']:
-            user_account.full_name = full_name
+            user_account.user_profile = {'full_name': full_name}
             
         db.session.add(user_account)
         return user_account
     else:
         user_account.username = username
+        if 'fullname_attribute' in current_app.config['LDAPCLIENT_SEARCH']:
+            user_account.user_profile = {'full_name': full_name}
+        
         user_account.email = email
         db.session.add(user_account)
         return user_account

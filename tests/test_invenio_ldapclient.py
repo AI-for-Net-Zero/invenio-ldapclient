@@ -516,40 +516,16 @@ def test_view__register_or_update_user(app):
         'daFullName': Mock(values=['Itsa Me']),
     }
     subject = invenio_ldapclient.views._register_or_update_user
-
-    # New user
-    #up_mock = MagicMock(autospec=UserProfile)
-    #with patch('invenio_ldapclient.views.UserProfile', lambda user_id: up_mock):  # noqa
-    #    user_mock = Mock(get_id=lambda: '666')
-    #    user_class_mock = Mock(
-    #        query=Mock(
-    #            filter_by=lambda email: Mock(
-    #                one_or_none=lambda: user_mock
-    #            )
-    #        )
-    #    )
-    #    with patch('invenio_ldapclient.views._datastore') as cu_patch:
-    #        with patch('invenio_ldapclient.views.User', user_class_mock):
-    #            with patch('invenio_ldapclient.views.db.session.add') as session_patch:  # noqa
-    #                assert subject(entries) == user_mock
-                
-    #assert up_mock.username == 'itsame'
-    #assert up_mock.full_name == 'Itsa Me'
-    #cu_patch.create_user.assert_called_once_with(
-    #    active=True,
-    #    email='itsame@ta.da',
-    #    password='fancy-pass'
-    #)
-    #session_patch.assert_called_with(up_mock)
-
-    user_mock = Mock(get_id=lambda: '666')
+    
+    user_mock = Mock(get_id=lambda: '666',)
     user_mock.email = 'itsame@ta.da'
 
     def _filter_by(username=None, email=None):
         return Mock(one_or_none = lambda : user_mock)
 
     user_class_mock = Mock(query = \
-                           Mock(filter_by = MagicMock(side_effect = _filter_by)))
+                           Mock(filter_by = MagicMock(side_effect = _filter_by))
+                           )
 
     @patch('invenio_ldapclient.views.db.session.add')
     @patch('invenio_ldapclient.views._datastore')
@@ -562,34 +538,26 @@ def test_view__register_or_update_user(app):
             email='itsame@ta.da',
             password='fancy-pass'
         )
-
+        
         assert user_account.username == 'itsame'
-        assert user_account.full_name == 'Itsa Me'
+        assert user_account.user_profile['full_name'] == 'Itsa Me'
         assert user_account.email == 'itsame@ta.da'
         mocked_db_session_add.assert_called_once_with(user_account)
 
-    # Existing user
-    #up_mock2 = MagicMock(autospec=UserProfile)
-    #user_mock2 = Mock(autospec=User, profile=up_mock2)
-    #with patch('invenio_ldapclient.views._datastore') as cu_patch:
-    #    with patch(
-    #        'invenio_ldapclient.views.db.session.add'
-    #    ) as session_patch:
-    #        assert subject(entries, user_account=user_mock2) == user_mock2
-    #        assert up_mock2.username == 'itsame'
-    #        assert up_mock2.full_name == 'Itsa Me'
-    #        assert session_patch.call_args_list[0][0][0] == user_mock2
-    #assert session_patch.call_args_list[1][0][0] == up_mock2
-
-    user_mock = Mock()
-    user_mock.email = 'itsame@ta.da'
+    existing_user_mock = Mock()
+    existing_user_mock.username = 'itsaformerme'
+    existing_user_mock.email = 'itsamyoldaemail@yahoo.cz'
+    existing_user_mock.user_profile = {'full_name': 'Itsa Former Me'}
+    
     @patch('invenio_ldapclient.views.db.session.add')
     def existing_user(mocked_db_session_add):
-        user_account = subject(entries, user_account = user_mock)
+        user_account = subject(entries, user_account = existing_user_mock)
+        assert user_account.username == 'itsame'
         assert user_account.email == 'itsame@ta.da'
+        assert user_account.user_profile['full_name'] == 'Itsa Me'
         mocked_db_session_add.assert_called_once_with(user_account)
 
-    new_user()
+    new_user()        
     existing_user()
 
 
