@@ -41,7 +41,8 @@ dev = ["pytest", "coverage", "sphinx", "pip-tools"]
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
-#[tool.setuptools]
+[tool.setuptools]
+include-package-data = true
 #packages = ["invenio_ldapclient", "invenio_ldapclient.django"]
 
 [tool.setuptools.dynamic]
