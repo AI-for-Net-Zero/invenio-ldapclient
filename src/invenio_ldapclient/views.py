@@ -34,24 +34,6 @@ def _commit(response=None):
     _datastore.commit()
     return response
 
-def _tls_dict_to_object(kwargs):
-    '''
-    Allow specifying a custom Tls object directly through config
-    as well as params to construct ldap3.Tls
-    '''
-    obj = kwargs.get('tls', None)
-    if obj and isinstance(obj, dict):
-        kwargs_copy = kwargs.copy()
-    
-        tls_params = kwargs_copy.pop('tls', None)
-        tls = Tls(**tls_params) if tls_params else None
-    
-        kwargs_copy['tls'] = tls
-    
-        return kwargs_copy
-    else:
-        return kwargs
-
 def _ldap_connection(form):#, app = current_app):
     """Make LDAP connection based on configuration."""
     if not form.validate_on_submit():
@@ -71,8 +53,6 @@ def _ldap_connection(form):#, app = current_app):
     #    )
     # --------->
 
-    servers = [ Server(**_tls_dict_to_object(kwargs)) for kwargs in current_app.config['LDAPCLIENT_SERVERS'] ]
-    server_pool = ServerPool(servers, ROUND_ROBIN, active=True, exhaust=True)
 
     ldap_user = "{}={},{}".format(
         current_app.config['LDAPCLIENT_SEARCH']['username_attribute'],
@@ -80,7 +60,9 @@ def _ldap_connection(form):#, app = current_app):
         current_app.config['LDAPCLIENT_SEARCH']['bind_base']
     )
 
-    conn = Connection(server_pool, ldap_user, form_pass)
+    servers = current_app.extensions['invenio-ldapclient'].servers
+    
+    conn = Connection(servers, ldap_user, form_pass)
     
     if not ( conn and conn.bind() ):
         return None
@@ -197,10 +179,11 @@ def ldap_login():
         connection = _ldap_connection(form)
 
         if connection and connection.bind():
-            after_this_request(_commit)
+            after_this_request(_commit) #<--- Should this move ...
             user = _find_or_register_user(connection, form.username.data)
 
             if user and login_user(user, remember=False):
+                #<--- to here?
                 next_page = request.args.get('next')
 
                 # Only allow relative URL for security

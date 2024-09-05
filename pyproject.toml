@@ -53,3 +53,6 @@ readme = {file = "README.rst"}
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.coverage.run]
+omit = ["src/invenio_ldapclient/django/*"]

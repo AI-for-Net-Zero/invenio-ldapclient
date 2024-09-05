@@ -18,6 +18,7 @@ following configuration:
 
 Below is a list of all configuration variables:
 """
+from ldap3 import ROUND_ROBIN
 
 LDAPCLIENT_AUTHENTICATION = True
 """Use LDAP as an authentication method without overriding the default."""
@@ -43,23 +44,37 @@ LDAPCLIENT_LOGIN_USER_TEMPLATE = 'invenio_ldapclient/login_user.html'
 LDAPCLIENT_USERNAME_PLACEHOLDER = 'Username'
 """Placeholder for the login form username field."""
 
-LDAPCLIENT_SERVERS = [{'host': 'example.com',
-                       'port': 389,
-                       'use_ssl': False,
-                       'tls': None},]
-                       
 
-#LDAPCLIENT_SERVER_HOSTNAME = 'example.com'
-"""LDAP server hostname. Your application MUST override this."""
+LDAPCLIENT_SERVER_POOL = True
+"""
+Are we forming a server pool?  If so, pass iterables of hosts and (possibly also) kwargs - 
+see below
+"""
 
-#LDAPCLIENT_SERVER_PORT = 389
-"""LDAP server port."""
+LDAPCLIENT_HOSTS = [('ldap.0.example.com', 389), ('ldap://ldap.1.example.com:389',),]
+"""
+2-tuple of host-port pair passed as 1st & 2nd args to ldap3.Server, or ...
 
-#LDAPCLIENT_USE_SSL = False
-"""Use SSL for LDAP connection."""
+1-tuple with single uri in form <scheme>://<hostname>:<hostport>, where <scheme> is ldap, ldaps 
+or ldapi, or ...
 
-#LDAPCLIENT_TLS = None
-"""TLS options for LDAP connection server."""
+iterables of these if using server pool
+"""
+
+LDAPCLIENT_SERVER_KWARGS = {'use_ssl': False, 'tls': None}
+"""
+Dict of kwargs to pass to ldap3.Server, or iterable of such if these differ by server (in which case
+MUST NOT be shorter than LDAPCLIENT_HOSTS.  Pass a nested dict of kwargs under 'tls' key to construct Tls object
+"""
+
+LDAPCLIENT_SERVER_POOL_KWARGS = {'pool_strategy': ROUND_ROBIN,
+                                 'active': True,
+                                 'exhaust': False,
+                                 'single_state': True}
+"""
+These are passed to ServerPool constructor, if LDAPCLIENT_SERVER_POOL is True
+"""
+                                 
 
 LDAPCLIENT_CUSTOM_CONNECTION = None
 """

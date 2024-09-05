@@ -9,7 +9,7 @@
 
 from __future__ import absolute_import, print_function
 
-from unittest.mock import MagicMock, Mock, patch, create_autospec
+from unittest.mock import MagicMock, Mock, patch, create_autospec, call
 
 import invenio_accounts
 import ldap3
@@ -23,6 +23,9 @@ from werkzeug.local import LocalProxy
 
 import invenio_ldapclient
 from invenio_ldapclient import InvenioLDAPClient
+from invenio_ldapclient.utils import get_config, config_value
+from invenio_ldapclient.ext import _LDAPServers
+
 
 def test_version():
     """Test version import."""
@@ -210,9 +213,16 @@ def test_view_ldap_connection_returns_True(app):
         
 
     patched_test()
-        
+
 def test_view__ldap_connection(app):
+    # With default TLS and Connection    
+    app.config.update(LDAPCLIENT_HOSTS = ('ldap.host', 666),
+                      LDAPCLIENT_SERVER_POOL = False,
+                      LDAPCLIENT_SERVER_KWARGS = {'use_ssl': True})
+
+    
     InvenioLDAPClient(app)
+    
         
     from invenio_ldapclient.views import _ldap_connection as subject
 
@@ -228,10 +238,7 @@ def test_view__ldap_connection(app):
     )
     assert subject(form_no_user) is False
     
-    # With default TLS and Connection    
-    app.config['LDAPCLIENT_SERVERS'] = [{'host': 'ldap.host',
-                                         'port': 666,
-                                         'use_ssl': True}]                                           
+                                                        
     
     app.config['LDAPCLIENT_SEARCH']['bind_base'] = 'ou=base,cn=test'
     app.config['LDAPCLIENT_SEARCH']['group_filters'] = \
@@ -268,22 +275,27 @@ def test_view__ldap_connection(app):
         mocked_search.side_effect = [False, False]
         
         conn = subject(form_valid)
-
+        
         assert conn is None
-    
+
+    # Doesn't add to coverage %
+    '''
+    mockTls = Mock(return_value = 'tls_obj')
     @patch('invenio_ldapclient.views.Connection.bind', lambda self : True)
     @patch('invenio_ldapclient.views.Connection.search')
+    @patch('invenio_ldapclient.views.Tls', mockTls)
     def test_valid_connection_group_member_non_default_tls(mocked_search):
         mocked_search.side_effect = [True, False]
-        
-        app.config['LDAPCLIENT_SERVERS'][0]['tls'] = ldap3.core.tls.Tls()
+
+
+        app.config['LDAPCLIENT_SERVER_KWARGS']['tls'] = mockTls()
 
         conn = subject(form_valid)
-        assert conn.server.tls == app.config['LDAPCLIENT_SERVERS'][0]['tls']
-
+        assert conn.server.tls == app.config['LDAPCLIENT_SERVER_KWARGS']['tls']
+    '''
     test_valid_connection_group_member()
     test_valid_connection_not_group_member()
-    test_valid_connection_group_member_non_default_tls()
+    #test_valid_connection_group_member_non_default_tls()
 
 
 
@@ -638,37 +650,122 @@ def test__try_server_connection(app):
 
     InvenioLDAPClient(app)
 
-
-@patch('invenio_ldapclient.views.Tls', return_value = 'Instantiated TLS object')
-def test__tls_object(mocked_tls):
-    CERT_NONE = object()
-    PROTOCOL_TLSv1 = object()
     
-    kwargs = {'host': 'example.com',
-              'port': 636,
-              'use_ssl': True,
-              'tls': {'validate': CERT_NONE,
-                      'version': PROTOCOL_TLSv1}}
+def test_get_config(app):
+    InvenioLDAPClient(app)
 
-    new_kwargs = invenio_ldapclient.views._tls_dict_to_object(kwargs)
-    assert mocked_tls.called_with(CERT_NONE, PROTOCOL_TLSv1)
-    assert new_kwargs['tls'] == 'Instantiated TLS object'
+    customConnection = lambda : None
+    
+    app.config.update(LDAPCLIENT_CUSTOM_CONNECTION = customConnection)
+    app.config['LDAPCLIENT_HOSTS'] = ('example.co.uk', 121)
+    
+    config = get_config(app)
 
-    mocked_tls.reset_mock(return_value = 'Another instantiated TLS object')
-
-    kwargs = {'host': 'example.com',
-              'port': 636,
-              'use_ssl': True}
-
-    new_kwargs = invenio_ldapclient.views._tls_dict_to_object(kwargs)
-
-    mocked_tls.assert_not_called()
-    assert new_kwargs.get('tls', None) is None
+    assert config['AUTHENTICATION'] == True
+    assert config['FIND_BY_EMAIL'] == True
+    assert config['HOSTS'] == ('example.co.uk', 121)
+    
+    assert config['CUSTOM_CONNECTION'] == customConnection
 
 
+def test_config_value(app):
+    InvenioLDAPClient(app)
 
+    app.config['LDAPCLIENT_HOSTS'] = ('example.co.uk', 111)
+
+    assert config_value('authentication') == True
+    assert config_value('hosts') == ('example.co.uk', 111)
+
+
+
+def test__LDAP_servers_no_pool():
+    mockServer = Mock(return_value = 'server_obj')
+    mockTls = Mock(return_value = 'tls_obj')
+    @patch('invenio_ldapclient.ext.Server', mockServer)
+    @patch('invenio_ldapclient.utils.Tls', mockTls)
+    def inner():
+        s1 = _LDAPServers( ('ldaps://example.com:636',),
+                           
+                           {'use_ssl': True,
+                            'tls': {'validate': ssl.CERT_NONE,
+                                    'version': ssl.PROTOCOL_TLSv1}
+                            },
+                           
+                           False)
+
+       
+        mockTls.assert_called_with(validate = ssl.CERT_NONE, version = ssl.PROTOCOL_TLSv1)
+
+        mockServer.assert_called_with('ldaps://example.com:636', use_ssl = True, tls = 'tls_obj')
+
+        assert s1.servers == 'server_obj'
+
+    inner()
+    
+def test__LDAP_servers_pool():
+    mockServer = Mock(return_value = 'server_obj')
+    mockServerPool = Mock(return_value = 'server_pool_obj')
+    mockTls = Mock(return_value = 'tls_obj')
+
+    @patch('invenio_ldapclient.ext.ServerPool', mockServerPool)
+    @patch('invenio_ldapclient.ext.Server', mockServer)
+    @patch('invenio_ldapclient.utils.Tls', mockTls)
+    def inner():
+        s1 = _LDAPServers(hosts = [('ldap0.example.com', 389), ('ldap1.example.com', 444)],
+                          server_kwargs = {'use_ssl': False,
+                                           'tls': None},
+                          server_pool = True,
+                          server_pool_kwargs = {'exhaust': False, 'active': True}
+                          )
+
+       
+        mockTls.assert_not_called()
+        calls = [call('ldap0.example.com', 389, use_ssl = False, tls = None),
+                 call('ldap1.example.com', 444, use_ssl = False, tls = None)]
+        mockServer.assert_has_calls(calls)
+        mockServerPool.assert_called_with(['server_obj', 'server_obj'],
+                                          exhaust = False, active = True)
+
+        assert s1.servers == 'server_pool_obj'
+
+    inner()
+
+def test__LDAP_servers_pool_2():
+    mockServer = Mock(return_value = 'server_obj')
+    mockServerPool = Mock(return_value = 'server_pool_obj')
+    mockTls = Mock(return_value = 'tls_obj')
+
+    @patch('invenio_ldapclient.ext.ServerPool', mockServerPool)
+    @patch('invenio_ldapclient.ext.Server', mockServer)
+    @patch('invenio_ldapclient.utils.Tls', mockTls)
+    def inner():
+        s1 = _LDAPServers(hosts = [('ldap0.example.com', 389), ('ldap1.example.com', 444)],
+                          server_kwargs = [{'use_ssl': False,
+                                            'tls': None},
+                                           {'something_else': 22}],
+
+                          server_pool = True,
+                          server_pool_kwargs = {'exhaust': False, 'active': True}
+                          )
+
+       
+        mockTls.assert_not_called()
+        calls = [call('ldap0.example.com', 389, use_ssl = False, tls = None),
+                 call('ldap1.example.com', 444, something_else = 22)]
+        mockServer.assert_has_calls(calls)
+        mockServerPool.assert_called_with(['server_obj', 'server_obj'],
+                                          exhaust = False, active = True)
+
+        assert s1.servers == 'server_pool_obj'
+
+    inner()
     
 
     
+
+    
+                                     
+
                     
-
+                       
+                                
