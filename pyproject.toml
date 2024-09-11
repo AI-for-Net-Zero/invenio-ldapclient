@@ -43,7 +43,6 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
 include-package-data = true
-#packages = ["invenio_ldapclient", "invenio_ldapclient.django"]
 
 [tool.setuptools.dynamic]
 version = {attr = "invenio_ldapclient.__version__"}

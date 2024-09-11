@@ -67,6 +67,11 @@ Dict of kwargs to pass to ldap3.Server, or iterable of such if these differ by s
 MUST NOT be shorter than LDAPCLIENT_HOSTS.  Pass a nested dict of kwargs under 'tls' key to construct Tls object
 """
 
+LDAPCLIENT_CONN_KWARGS = None
+"""
+None or dict of kwargs passed to ldap3.Connection constructor
+"""
+
 LDAPCLIENT_SERVER_POOL_KWARGS = {'pool_strategy': ROUND_ROBIN,
                                  'active': True,
                                  'exhaust': False,
@@ -101,23 +106,17 @@ user account will be used.
 # LDAPCLIENT_ADMIN_PASSWORD = 'NOTIT'
 """Admin LDAP account password."""
 
-LDAPCLIENT_SEARCH = {'bind_base': 'ou=people,dc=example,dc=com',
-                     'search_base': 'dc=example,dc=com',
-                     'search_filter': None,
-                     'group_filters': [],
-                     'username_attribute': 'uid',
-                     'email_attribute': 'mail',
-                     'fullname_attribute': 'displayName',
-                     'search_attributes': None,
-                     }
-
-#LDAPCLIENT_SEARCH_BASE = 'dc=example,dc=com'
+LDAPCLIENT_BIND_BASE = 'ou=people,dc=example,dc=com'
 """Base for binding to LDAP. Your application MUST override this."""
 
-#LDAPCLIENT_BIND_BASE = 'ou=people,dc=example,dc=com'
+
+LDAPCLIENT_SEARCH_BASE = 'dc=example,dc=com'
 """Base for binding to LDAP. Your application MUST override this."""
 
-#LDAPCLIENT_USERNAME_ATTRIBUTE = 'uid'
+LDAPCLIENT_SEARCH_FILTER = None
+
+
+LDAPCLIENT_USERNAME_ATTRIBUTE = 'uid'
 """
 Username LDAP attribute.
 Prepended to ``LDAPCLIENT_BIND_BASE`` with the username from the log in form
@@ -126,13 +125,13 @@ for binding, resulting in:
     ``uid=FORM-USERNAME,ou=people,dc=example,dc=com``
 """
 
-#LDAPCLIENT_EMAIL_ATTRIBUTE = 'mail'
+LDAPCLIENT_EMAIL_ATTRIBUTE = 'mail'
 """Email LDAP attribute."""
 
-#LDAPCLIENT_FULL_NAME_ATTRIBUTE = 'displayName'
+LDAPCLIENT_FULL_NAME_ATTRIBUTE = 'displayName'
 """Full name LDAP attribute."""
 
-#LDAPCLIENT_SEARCH_ATTRIBUTES = None
+LDAPCLIENT_SEARCH_ATTRIBUTES = None
 """List of attributes to fetch from LDAP. Defaults to all of them (``'*'``)."""
 
-
+LDAPCLIENT_GROUP_FILTERS = []
