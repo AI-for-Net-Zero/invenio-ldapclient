@@ -9,7 +9,8 @@ from ldap3 import MOCK_SYNC, Connection
 from invenio_ldapclient import InvenioLDAPClient
 from invenio_ldapclient.forms import login_form_factory
 
-def test_bind(server):
+def test_bind(mock_server_factory):
+    server = mock_server_factory('ldap.mock')
     conn = Connection(server,
                       'uid=testuser0,ou=People,o=Example,dc=example,dc=com',
                       b'secret123',
@@ -71,8 +72,9 @@ def test_no_username_or_password_or_form_not_submitted(app):
         assert not login_form.is_submitted()
 
 
-def test_username_password_invalid(configured_app, server):
+def test_username_password_invalid(configured_app, mock_server_factory):
     app = configured_app
+    server = mock_server_factory('ldap.mock')
     mockServerCls = Mock(return_value = server)
 
     @patch('invenio_ldapclient.ext.Server', mockServerCls)
@@ -92,8 +94,9 @@ def test_username_password_invalid(configured_app, server):
 
     inner()
 
-def test_user_not_in_group(configured_app, server):
+def test_user_not_in_group(configured_app, mock_server_factory):
     app = configured_app
+    server = mock_server_factory('ldap.mock')
     mockServerCls = Mock(return_value = server)
 
     @patch('invenio_ldapclient.ext.Server', mockServerCls)
@@ -114,8 +117,9 @@ def test_user_not_in_group(configured_app, server):
     inner()
 
 
-def test_no_email(configured_app, server):
+def test_no_email(configured_app, mock_server_factory):
     app = configured_app
+    server = mock_server_factory('ldap.mock')
     mockServerCls = Mock(return_value = server)
 
     @patch('invenio_ldapclient.ext.Server', mockServerCls)
@@ -136,8 +140,9 @@ def test_no_email(configured_app, server):
 
     inner()
 
-def test_no_display_name(configured_app, server):
+def test_no_display_name(configured_app, mock_server_factory):
     app = configured_app
+    server = mock_server_factory('ldap.mock')
     mockServerCls = Mock(return_value = server)
 
     @patch('invenio_ldapclient.ext.Server', mockServerCls)
@@ -156,8 +161,9 @@ def test_no_display_name(configured_app, server):
 
     inner()    
 
-def test_all_good(configured_app, server):
+def test_all_good(configured_app, mock_server_factory):
     app = configured_app
+    server = mock_server_factory('ldap.mock')
     mockServerCls = Mock(return_value = server)
 
     @patch('invenio_ldapclient.ext.Server', mockServerCls)
@@ -177,8 +183,9 @@ def test_all_good(configured_app, server):
 
     inner()
 
-def test_not_under_search_base(strangely_configured_app, server):
+def test_not_under_search_base(strangely_configured_app, mock_server_factory):
     app = strangely_configured_app
+    server = mock_server_factory('ldap.mock')
     mockServerCls = Mock(return_value = server)
 
     @patch('invenio_ldapclient.ext.Server', mockServerCls)

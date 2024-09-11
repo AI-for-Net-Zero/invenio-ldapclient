@@ -80,146 +80,148 @@ def strangely_configured_app(app):
 
 
 @pytest.fixture()
-def server():
-    
-    server = Server.from_definition('ldap.mock',
-                                    test_resource_path + '/mock_ldap_server.json',
-                                    test_resource_path + '/mock_ldap_server_schema.json')
+def mock_server_factory():
+    def _factory(name):
+        server = Server.from_definition(name,
+                                        test_resource_path + '/mock_ldap_server.json',
+                                        test_resource_path + '/mock_ldap_server_schema.json')
 
-    conn = Connection(server,
-                      user = 'uid=admin,dc=example,dc=com',
-                      password = 'secret321',
-                      client_strategy = MOCK_SYNC)
+        conn = Connection(server,
+                          user = 'uid=admin,dc=example,dc=com',
+                          password = 'secret321',
+                          client_strategy = MOCK_SYNC)
 
-    conn.strategy.add_entry('uid=admin,dc=example,dc=com',
-                            {'userPassword': 'secret321'})
+        conn.strategy.add_entry('uid=admin,dc=example,dc=com',
+                                {'userPassword': 'secret321'})
 
-    with conn:
-        dn = 'o=Example,dc=example,dc=com'
-        conn.add(dn=dn,
-                 object_class='organization',
-                 attributes={'o': 'Example'})
+        with conn:
+            dn = 'o=Example,dc=example,dc=com'
+            conn.add(dn=dn,
+                     object_class='organization',
+                     attributes={'o': 'Example'})
 
-        dn = 'ou=People,o=Example,dc=example,dc=com'
-        conn.add(dn=dn,
-                 object_class='organizationalUnit')
+            dn = 'ou=People,o=Example,dc=example,dc=com'
+            conn.add(dn=dn,
+                     object_class='organizationalUnit')
 
-        dn = 'ou=Local,o=Example,dc=example,dc=com'
-        conn.add(dn=dn,
-                 object_class='organizationalUnit')
+            dn = 'ou=Local,o=Example,dc=example,dc=com'
+            conn.add(dn=dn,
+                     object_class='organizationalUnit')
 
-        dn = 'ou=People,ou=Local,o=Example,dc=example,dc=com'
-        conn.add(dn=dn,
-                 object_class='organizationalUnit')
+            dn = 'ou=People,ou=Local,o=Example,dc=example,dc=com'
+            conn.add(dn=dn,
+                     object_class='organizationalUnit')
 
-        dn = 'ou=Groups,ou=Local,o=Example,dc=example,dc=com'
-        conn.add(dn=dn,
-                 object_class='organizationalUnit')
+            dn = 'ou=Groups,ou=Local,o=Example,dc=example,dc=com'
+            conn.add(dn=dn,
+                     object_class='organizationalUnit')
 
-        #Sited in different part of DIT
-        uidNumber = 0
-        dn = f'uid=testuser{uidNumber},ou=People,o=Example,dc=example,dc=com'
-        conn.add(dn=dn,
-                 object_class=['inetOrgPerson','posixAccount','shadowAccount'],
-                 attributes={'homeDirectory': f'/home/testuser{uidNumber}',
-                             'sn': 'Testuser',
-                             'cn': f'Test User {uidNumber}',
-                             'displayName': f'Test User {uidNumber}',
-                             'uidNumber': uidNumber,
-                             'gidNumber': 0,
-                             'mail': f'testuser{uidNumber}@example.com',
-                             'userPassword': 'secret123'
-                             })
+            #Sited in different part of DIT
+            uidNumber = 0
+            dn = f'uid=testuser{uidNumber},ou=People,o=Example,dc=example,dc=com'
+            conn.add(dn=dn,
+                     object_class=['inetOrgPerson','posixAccount','shadowAccount'],
+                     attributes={'homeDirectory': f'/home/testuser{uidNumber}',
+                                 'sn': 'Testuser',
+                                 'cn': f'Test User {uidNumber}',
+                                 'displayName': f'Test User {uidNumber}',
+                                 'uidNumber': uidNumber,
+                                 'gidNumber': 0,
+                                 'mail': f'testuser{uidNumber}@example.com',
+                                 'userPassword': 'secret123'
+                                 })
 
-        #Has everything: mail, displayName and group membership
-        uidNumber = 1
-        dn = f'uid=testuser{uidNumber},ou=People,ou=Local,o=Example,dc=example,dc=com'
-        conn.add(dn=dn,
-                 object_class=['inetOrgPerson','posixAccount','shadowAccount'],
-                 attributes={'homeDirectory': f'/home/testuser{uidNumber}',
-                             'sn': 'Testuser',
-                             'cn': f'Test User {uidNumber}',
-                             'displayName': f'Test User {uidNumber}',
-                             'uidNumber': uidNumber,
-                             'gidNumber': 0,
-                             'mail': f'testuser{uidNumber}@example.com',
-                             'userPassword': 'secret123'
-                             })
+            #Has everything: mail, displayName and group membership
+            uidNumber = 1
+            dn = f'uid=testuser{uidNumber},ou=People,ou=Local,o=Example,dc=example,dc=com'
+            conn.add(dn=dn,
+                     object_class=['inetOrgPerson','posixAccount','shadowAccount'],
+                     attributes={'homeDirectory': f'/home/testuser{uidNumber}',
+                                 'sn': 'Testuser',
+                                 'cn': f'Test User {uidNumber}',
+                                 'displayName': f'Test User {uidNumber}',
+                                 'uidNumber': uidNumber,
+                                 'gidNumber': 0,
+                                 'mail': f'testuser{uidNumber}@example.com',
+                                 'userPassword': 'secret123'
+                                 })
 
-        #Does not belong to required groups (green or blue)
-        uidNumber = 2
-        dn = f'uid=testuser{uidNumber},ou=People,ou=Local,o=Example,dc=example,dc=com'
-        conn.add(dn=dn,
-                 object_class=['inetOrgPerson','posixAccount','shadowAccount'],
-                 attributes={'homeDirectory': f'/home/testuser{uidNumber}',
-                             'sn': 'Testuser',
-                             'cn': f'Test User {uidNumber}',
-                             'displayName': f'Test User {uidNumber}',
-                             'uidNumber': uidNumber,
-                             'gidNumber': 0,
-                             'mail': f'testuser{uidNumber}@example.com',
-                             'userPassword': 'secret123'
-                             })
+            #Does not belong to required groups (green or blue)
+            uidNumber = 2
+            dn = f'uid=testuser{uidNumber},ou=People,ou=Local,o=Example,dc=example,dc=com'
+            conn.add(dn=dn,
+                     object_class=['inetOrgPerson','posixAccount','shadowAccount'],
+                     attributes={'homeDirectory': f'/home/testuser{uidNumber}',
+                                 'sn': 'Testuser',
+                                 'cn': f'Test User {uidNumber}',
+                                 'displayName': f'Test User {uidNumber}',
+                                 'uidNumber': uidNumber,
+                                 'gidNumber': 0,
+                                 'mail': f'testuser{uidNumber}@example.com',
+                                 'userPassword': 'secret123'
+                                 })
+
+            #No email attribute
+            uidNumber = 3
+            dn = f'uid=testuser{uidNumber},ou=People,ou=Local,o=Example,dc=example,dc=com'
+            conn.add(dn=dn,
+                     object_class=['inetOrgPerson','posixAccount','shadowAccount'],
+                     attributes={'homeDirectory': f'/home/testuser{uidNumber}',
+                                 'sn': 'Testuser',
+                                 'cn': f'Test User {uidNumber}',
+                                 'displayName': f'Test User {uidNumber}',
+                                 'uidNumber': uidNumber,
+                                 'gidNumber': 0,
+                                 'userPassword': 'secret123'
+                                 })
+
+            #No displayName
+            uidNumber = 4
+            dn = f'uid=testuser{uidNumber},ou=People,ou=Local,o=Example,dc=example,dc=com'
+            conn.add(dn=dn,
+                     object_class=['inetOrgPerson','posixAccount','shadowAccount'],
+                     attributes={'homeDirectory': f'/home/testuser{uidNumber}',
+                                 'sn': 'Testuser',
+                                 'cn': f'Test User {uidNumber}',
+                                 'uidNumber': uidNumber,
+                                 'gidNumber': 0,
+                                 'mail': f'testuser{uidNumber}@example.com',
+                                 'userPassword': 'secret123'
+                                 })
+
+            #Red group: all users
+            dn = 'cn=red,ou=Groups,ou=Local,o=Example,dc=example,dc=com'
+            conn.add(dn=dn,
+                     object_class='posixGroup',
+                     attributes={'gidNumber': 0,
+                                 'memberUid': ['testuser0',
+                                               'testuser1',
+                                               'testuser2',
+                                               'testuser3',
+                                               'testuser4']})
+
+            #Green group
+            dn = 'cn=green,ou=Groups,ou=Local,o=Example,dc=example,dc=com'
+            conn.add(dn=dn,
+                     object_class='posixGroup',
+                     attributes={'gidNumber': 1,
+                                 'memberUid': ['testuser0',
+                                               'testuser1',                                    
+                                               'testuser3',
+                                               'testuser4']})
+
+            #Blue group
+            dn = 'cn=blue,ou=Groups,ou=Local,o=Example,dc=example,dc=com'
+            conn.add(dn=dn,
+                     object_class='posixGroup',
+                     attributes={'gidNumber': 1,
+                                 'memberUid': ['testuser1',                                    
+                                               'testuser3',
+                                               'testuser4']})
+
+            return server
         
-        #No email attribute
-        uidNumber = 3
-        dn = f'uid=testuser{uidNumber},ou=People,ou=Local,o=Example,dc=example,dc=com'
-        conn.add(dn=dn,
-                 object_class=['inetOrgPerson','posixAccount','shadowAccount'],
-                 attributes={'homeDirectory': f'/home/testuser{uidNumber}',
-                             'sn': 'Testuser',
-                             'cn': f'Test User {uidNumber}',
-                             'displayName': f'Test User {uidNumber}',
-                             'uidNumber': uidNumber,
-                             'gidNumber': 0,
-                             'userPassword': 'secret123'
-                             })
-
-        #No displayName
-        uidNumber = 4
-        dn = f'uid=testuser{uidNumber},ou=People,ou=Local,o=Example,dc=example,dc=com'
-        conn.add(dn=dn,
-                 object_class=['inetOrgPerson','posixAccount','shadowAccount'],
-                 attributes={'homeDirectory': f'/home/testuser{uidNumber}',
-                             'sn': 'Testuser',
-                             'cn': f'Test User {uidNumber}',
-                             'uidNumber': uidNumber,
-                             'gidNumber': 0,
-                             'mail': f'testuser{uidNumber}@example.com',
-                             'userPassword': 'secret123'
-                             })
-
-        #Red group: all users
-        dn = 'cn=red,ou=Groups,ou=Local,o=Example,dc=example,dc=com'
-        conn.add(dn=dn,
-                 object_class='posixGroup',
-                 attributes={'gidNumber': 0,
-                             'memberUid': ['testuser0',
-                                           'testuser1',
-                                           'testuser2',
-                                           'testuser3',
-                                           'testuser4']})
-        
-        #Green group
-        dn = 'cn=green,ou=Groups,ou=Local,o=Example,dc=example,dc=com'
-        conn.add(dn=dn,
-                 object_class='posixGroup',
-                 attributes={'gidNumber': 1,
-                             'memberUid': ['testuser0',
-                                           'testuser1',                                    
-                                           'testuser3',
-                                           'testuser4']})
-
-        #Blue group
-        dn = 'cn=blue,ou=Groups,ou=Local,o=Example,dc=example,dc=com'
-        conn.add(dn=dn,
-                 object_class='posixGroup',
-                 attributes={'gidNumber': 1,
-                             'memberUid': ['testuser1',                                    
-                                           'testuser3',
-                                           'testuser4']})
-        
-    return server    
+    return _factory    
     
 
 
