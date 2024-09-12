@@ -10,40 +10,26 @@
 from __future__ import absolute_import, print_function
 
 from . import config
-from .views import blueprint
-from .utils import get_config, _tls_dict_to_object, config_value as cv
+from .views import create_blueprint, login_via_ldap
+from .utils import get_config, config_value as cv
 from ldap3 import Server, ServerPool
 
-#self.servers = server_cls
-
-
-#servers = 
-#server_pool = ServerPool(servers, ROUND_ROBIN, active=True, exhaust=True)
-
-
 class _LDAPServers:
-    def __init__(self,
-                 hosts,
+    def __init__(self,                
                  server_kwargs,
-                 server_pool,
                  server_pool_kwargs = None):
-        # hosts is either tuple[str, int], tuple[str] or iterable of either of these
-        # server_kwargs is either dict or iter[dict]
+        """ hosts is either tuple[str, int], tuple[str] or iterable of either of these
+        server_kwargs is either dict or iter[dict] """
 
-        if not server_pool:
-            self.servers = Server(*hosts, **_tls_dict_to_object(server_kwargs))
+        if isinstance(server_kwargs, dict): 
+            server = Server(**server_kwargs)
+            server_pool = None
         else:
-            if isinstance(server_kwargs, dict): 
-                self.servers = ServerPool([ Server(*h, **_tls_dict_to_object(server_kwargs)) \
-                                            for h in hosts ], **server_pool_kwargs)
+            servers = [Server(**kws) for kws in server_kwargs]
+            server_pool = ServerPool(servers, **server_pool_kwargs)
 
-            else:
-                self.servers = ServerPool([ Server(*h, **_tls_dict_to_object(kws)) \
-                                            for h, kws in zip(hosts, server_kwargs)],
-                                          **server_pool_kwargs)
-
+        self.servers = server_pool if server_pool else server
             
-                
 
 class InvenioLDAPClient(object):
     """Invenio-LDAPClient extension."""
@@ -57,13 +43,23 @@ class InvenioLDAPClient(object):
         """Flask application initialization."""
         self.init_config(app)
 
-        state = _LDAPServers(hosts = cv('hosts', app),
-                             server_kwargs = cv('server_kwargs', app),
-                             server_pool = cv('server_pool', app),
+        state = _LDAPServers(server_kwargs = cv('server_kwargs', app),                            
                              server_pool_kwargs = cv('server_pool_kwargs', app))
                              
+
+        if cv('exclusive_authentication'):
+            # Set invenio_accounts login-view config option
+            # ... config, view-function, template ...what else? 
+            app.config['SECURITY_CONFIRMABLE'] = False
+            app.config['SECURITY_RECOVERABLE'] = False
+            app.config['SECURITY_REGISTERABLE'] = False
+            app.config['SECURITY_CHANGEABLE'] = False
+            app.config['USERPROFILES_EMAIL_ENABLED'] = False
+            app.config['ACCOUNTS_LOGIN_VIEW_FUNCTION'] = login_via_ldap
+        else:
+            raise NotImplementedError
+            #blueprint = create_blueprint(app)
         
-        app.register_blueprint(blueprint)
         app.extensions['invenio-ldapclient'] = state
 
     def init_config(self, app):
@@ -77,7 +73,8 @@ class InvenioLDAPClient(object):
         for k in dir(config):
             if k.startswith('LDAPCLIENT_'):
                 '''
-                dict instances are mutable. Copy, o/w unit tests will mutate .config
+                dicts are mutable and unit tests end up mutating config module,
+                hence the copy
                 '''
                 if isinstance( getattr(config, k), dict):
                     app.config.setdefault(k, getattr(config, k).copy() )
@@ -88,17 +85,13 @@ class InvenioLDAPClient(object):
             return
 
         if app.config['LDAPCLIENT_EXCLUSIVE_AUTHENTICATION']:
-            @app.before_first_request
+            @app.before_first_request #Flask.before_first request is deprecated
             def ldap_login_view_setup():
                 from .views import ldap_login
                 app.view_functions['security.login'] = ldap_login
                 app.extensions['security'].login_manager.login_view = \
                     'invenio_ldapclient.ldap_login'
-                app.config['SECURITY_CONFIRMABLE'] = False
-                app.config['SECURITY_RECOVERABLE'] = False
-                app.config['SECURITY_REGISTERABLE'] = False
-                app.config['SECURITY_CHANGEABLE'] = False
-                app.config['USERPROFILES_EMAIL_ENABLED'] = False
+                
 
             app.config['SECURITY_LOGIN_USER_TEMPLATE'] = (
                 app.config['LDAPCLIENT_LOGIN_USER_TEMPLATE']

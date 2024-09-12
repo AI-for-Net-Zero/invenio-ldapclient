@@ -5,30 +5,23 @@ from __future__ import absolute_import, print_function
 import uuid
 
 from flask import Blueprint, after_this_request
-#from flask import current_app as app
 from flask import current_app
 from flask import flash, redirect, render_template, request
 from flask_security import login_user
+from flask_security.decorators import anonymous_user_required
 from invenio_accounts.models import User
 from invenio_db import db
-#from invenio_userprofiles.models import UserProfile
 from ldap3 import ALL, ALL_ATTRIBUTES, Connection, Server, Tls, ServerPool, ROUND_ROBIN
 from werkzeug.local import LocalProxy
 
 from sqlalchemy import select
-from .django import url_has_allowed_host_and_scheme
-from .forms import login_form_factory
-
+#from .django import url_has_allowed_host_and_scheme
+from invenio_ldapclient.forms import login_form_factory
+from invenio_ldapclient.utils import get_user
 
 _security = LocalProxy(lambda: current_app.extensions['security'])
 _datastore = LocalProxy(lambda: _security.datastore)
 
-blueprint = Blueprint(
-    'invenio_ldapclient',
-    __name__,
-    template_folder='templates',
-    static_folder='static',
-)
 
 def _commit(response=None):
     _datastore.commit()
@@ -124,11 +117,6 @@ def _register_or_update_user(entries, user_account=None):
         db.session.add(user_account)
         return user_account
 
-    #profile.full_name = full_name
-    #user_account.username = username
-    #db.session.add(user_account)
-    #return user_account
-
 
 def _find_or_register_user(connection, username):
     """Find user by email, username or register a new one."""
@@ -145,9 +133,6 @@ def _find_or_register_user(connection, username):
         return None
 
     # Try by username first
-    #user = User.query.join(UserProfile).filter(
-    #    UserProfile.username == username
-    #).one_or_none()
     user = User.query.filter_by(username=username).one_or_none()
 
     # Try by email next
@@ -164,14 +149,27 @@ def _find_or_register_user(connection, username):
         return _register_or_update_user(entries)
 
 
-@blueprint.route('/ldap-login', methods=['GET', 'POST'])
+#@blueprint.route('/ldap-login', methods=['GET', 'POST'])
+'''
 def ldap_login():
-    """
+
     LDAP login form view.
 
     Process login request using LDAP and register
     the user if needed.
-    """
+
+    <----- in .utils.find_or_register_user
+    1. search for form.user (set in form.validate, called by form.validate_on_submit)
+       in app _datastore by (i) username, (ii) email (if configured).
+    2. return User instance, creating one, if necessary
+      ----->     
+               
+       We don't want directory group membership and user.active logic in the same application
+               if these are going to get out of sync with each other.  Therefore, if we set LDAP
+               to be sole auth. mechanism in config, then at this stage set user.is_active = True in
+               _datastore
+          
+
     form = login_form_factory(current_app)()
 
     if form.validate_on_submit():
@@ -187,12 +185,11 @@ def ldap_login():
                 next_page = request.args.get('next')
 
                 # Only allow relative URL for security
-                #if not next_page or next_page.startswith('http'):
                 if not url_has_allowed_host_and_scheme(next_page,
                                                        allowed_hosts = None,
                                                        require_https = \
                                                        current_app.config['LDAPCLIENT_REQUIRE_HTTPS']):
-                #if not next_page or next_page.startswith('http'): 
+                
                     next_page = current_app.config['SECURITY_POST_LOGIN_VIEW']
 
                 connection.unbind()
@@ -209,3 +206,33 @@ def ldap_login():
         current_app.config['SECURITY_LOGIN_USER_TEMPLATE'],
         login_user_form=form
     )
+'''
+
+def create_blueprint(app):
+    blueprint = Blueprint(
+        'invenio_ldapclient',
+        __name__,
+        template_folder='templates',
+        static_folder='static',
+    )
+
+    blueprint.route('/ldap-login', methods=['GET', 'POST'])(login_via_ldap)
+
+    return blueprint
+
+@anonymous_user_required
+def login_via_ldap():
+    login_form = login_form_factory(current_app)()
+
+    if form.validate_on_submit():
+        user = get_user(form)
+        login_user(user)
+        after_this_request(_commit)
+
+        return redirect(get_post_login_redirect(form.next.data))
+
+    else:
+        return render_template(
+            current_app.config['SECURITY_LOGIN_USER_TEMPLATE'],
+            login_user_form=form
+        )    

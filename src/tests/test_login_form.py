@@ -19,11 +19,13 @@ def test_bind(mock_server_factory):
     assert conn.bind()
 
 
-def test_factory_returns_form_subclass(app):
-    from invenio_ldapclient.forms import login_form_factory
+def test_factory_returns_form_subclass(configured_app):
     from flask_security.forms import Form
+    app = configured_app
 
-    InvenioLDAPClient(app)    
+    InvenioLDAPClient(app)
+    InvenioAccountsUI(app)
+    
     LoginForm = login_form_factory(app)
     assert hasattr(LoginForm, 'username')
     assert hasattr(LoginForm, 'password')
@@ -32,7 +34,8 @@ def test_factory_returns_form_subclass(app):
     assert issubclass(LoginForm, Form)
     
 
-def test_next(app):
+def test_next(configured_app):
+    app = configured_app
     InvenioLDAPClient(app)
     InvenioAccountsUI(app)    
 
@@ -43,8 +46,8 @@ def test_next(app):
     with app.test_request_context('/login/?next=/where_to_next', method='POST'):
         inner()
 
-def test_no_username_or_password_or_form_not_submitted(app):
-    app.config.update(WTF_CSRF_ENABLED = False)
+def test_no_username_or_password_or_form_not_submitted(configured_app):
+    app = configured_app
     
     InvenioLDAPClient(app)
     InvenioAccountsUI(app)

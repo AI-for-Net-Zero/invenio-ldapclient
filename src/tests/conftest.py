@@ -18,8 +18,8 @@ from flask import Flask
 from flask_babel import Babel
 from invenio_i18n import InvenioI18N
 
-from ldap3 import Server, ServerPool, Connection, MOCK_SYNC
-
+from ldap3 import Server, ServerPool, Connection, MOCK_SYNC, ROUND_ROBIN
+import ssl
 test_resource_path = str(importlib.resources.files('tests')/'resources')
 
 @pytest.fixture()
@@ -45,17 +45,30 @@ def app(instance_path):
     with app_.app_context():
         yield app_
 
+
+group_filters = [lambda u : f'(&(memberUid={u})(objectClass=posixGroup)(cn=green))',
+                 lambda u : f'(&(memberUid={u})(objectClass=posixGroup)(cn=blue))']
+
+
+user_filter = lambda u : f'(&(uid={u})(objectClass=posixAccount))'
+
+        
 @pytest.fixture()
 def configured_app(app):
-    group_filters = [lambda u : f'(&(memberUid={u})(objectClass=posixGroup)(cn=green))',
-                     lambda u : f'(&(memberUid={u})(objectClass=posixGroup)(cn=blue))']
-
+    bind_base = lambda u : f'uid={u},ou=People,ou=Local,o=Example,dc=example,dc=com'
+    
     app.config.update(WTF_CSRF_ENABLED = False,
+                      LDAPCLIENT_SERVER_KWARGS = {
+                          'host': 'ldap.0.example.com',
+                          'port': 389,
+                          'use_ssl': False,
+                          'tls': None},
                       LDAPCLIENT_FULL_NAME_ATTRIBUTE = 'displayName',
-                      LDAPCLIENT_BIND_BASE = 'ou=People,ou=Local,o=Example,dc=example,dc=com',
-                      LDAPCLIENT_SEARCH_BASE = 'ou=Local,o=Example,dc=example,dc=com',
-                      LDAPCLIENT_SERVER_POOL = False,
-                      LDAPCLIENT_CONN_KWARGS = {'client_strategy': MOCK_SYNC},
+                      LDAPCLIENT_BIND_BASE = bind_base,
+                      LDAPCLIENT_USER_SEARCH_BASE = 'ou=People,ou=Local,o=Example,dc=example,dc=com',
+                      LDAPCLIENT_USER_SEARCH_FILTER = user_filter,
+                      LDAPCLIENT_CONNECTION_KWARGS = {'client_strategy': MOCK_SYNC},
+                      LDAPCLIENT_GROUP_SEARCH_BASE = 'ou=Groups,ou=Local,o=Example,dc=example,dc=com',
                       LDAPCLIENT_GROUP_FILTERS = group_filters
                       )
     return app
@@ -65,18 +78,49 @@ def strangely_configured_app(app):
     '''
     This is just to hit the if not connection.entries branch in .forms
     '''
-    group_filters = [lambda u : f'(&(memberUid={u})(objectClass=posixGroup)(cn=green))',
-                     lambda u : f'(&(memberUid={u})(objectClass=posixGroup)(cn=blue))']
-
+    bind_base = lambda u : f'uid={u},ou=People,o=Example,dc=example,dc=com'
+    
     app.config.update(WTF_CSRF_ENABLED = False,
+                      LDAPCLIENT_SERVER_KWARGS = {
+                          'host': 'ldap.0.example.com',
+                          'port': 389,
+                          'use_ssl': False,
+                          'tls': None},
                       LDAPCLIENT_FULL_NAME_ATTRIBUTE = 'displayName',
-                      LDAPCLIENT_BIND_BASE = 'ou=People,o=Example,dc=example,dc=com',
-                      LDAPCLIENT_SEARCH_BASE = 'ou=Local,o=Example,dc=example,dc=com',
-                      LDAPCLIENT_SERVER_POOL = False,
-                      LDAPCLIENT_CONN_KWARGS = {'client_strategy': MOCK_SYNC},
+                      LDAPCLIENT_BIND_BASE = bind_base,
+                      LDAPCLIENT_USER_SEARCH_BASE = 'ou=Local,o=Example,dc=example,dc=com',
+                      LDAPCLIENT_USER_SEARCH_FILTER = user_filter,
+                      LDAPCLIENT_CONNECTION_KWARGS = {'client_strategy': MOCK_SYNC},
+                      LDAPCLIENT_GROUP_SEARCH_BASE = 'ou=Groups,ou=Local,o=Example,dc=example,dc=com',
                       LDAPCLIENT_GROUP_FILTERS = group_filters
                       )
     return app
+
+@pytest.fixture()
+def configured_app_with_server_pool(app):
+    bind_base = lambda u : f'uid={u},ou=People,ou=Local,o=Example,dc=example,dc=com'
+    
+    app.config.update(WTF_CSRF_ENABLED = False,
+                    LDAPCLIENT_SERVER_KWARGS = [
+                        {'host': 'ldap.0.example.com',
+                         'port': 389,
+                         'use_ssl': False,
+                         'tls': None},
+                    {
+                        'host': 'ldap.1.example.com',
+                        'port': 389,
+                        'use_ssl': False,
+                        'tls': None},],
+                      LDAPCLIENT_FULL_NAME_ATTRIBUTE = 'displayName',
+                      LDAPCLIENT_BIND_BASE = bind_base,
+                      LDAPCLIENT_USER_SEARCH_BASE = 'ou=People,ou=Local,o=Example,dc=example,dc=com',
+                      LDAPCLIENT_USER_SEARCH_FILTER = user_filter,
+                      LDAPCLIENT_CONNECTION_KWARGS = {'client_strategy': MOCK_SYNC},
+                      LDAPCLIENT_GROUP_SEARCH_BASE = 'ou=Groups,ou=Local,o=Example,dc=example,dc=com',
+                      LDAPCLIENT_GROUP_FILTERS = group_filters
+                      )
+    return app
+
 
 
 @pytest.fixture()
@@ -221,7 +265,7 @@ def mock_server_factory():
 
             return server
         
-    return _factory    
-    
+    return _factory
+
 
 

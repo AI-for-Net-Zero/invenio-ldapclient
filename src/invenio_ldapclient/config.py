@@ -18,8 +18,6 @@ following configuration:
 
 Below is a list of all configuration variables:
 """
-from ldap3 import ROUND_ROBIN
-
 LDAPCLIENT_AUTHENTICATION = True
 """Use LDAP as an authentication method without overriding the default."""
 
@@ -44,56 +42,46 @@ LDAPCLIENT_LOGIN_USER_TEMPLATE = 'invenio_ldapclient/login_user.html'
 LDAPCLIENT_USERNAME_PLACEHOLDER = 'Username'
 """Placeholder for the login form username field."""
 
+LDAPCLIENT_SERVER_KWARGS = None
+"""
+See documentation for ldap3.Server at https://ldap3.readthedocs.io/en/latest/server.html
 
-LDAPCLIENT_SERVER_POOL = True
-"""
-Are we forming a server pool?  If so, pass iterables of hosts and (possibly also) kwargs - 
-see below
+dict of keyword args to pass to ldap3.Server constructor for a single server
+OR an iterable of such to construct a server pool 
+
+E.g., specifying host and port separately
+LDAPCLIENT_SERVER_KWARGS = {'host': 'ldap.0.example.com',
+                            'port': 389,
+                            'use_ssl': False}
+
+or letting ldap3 infer the port from the uri
+
+LDAPCLIENT_SERVER_KWARGS = {'host': 'ldaps://ldap.1.example.com',
+                            'use_ssl': True,
+                            'tls': <Some custom Tls object (see documentation)>}
+
+or a list telling invenio-ldapclient to construct a server pool of 2 server instances
+                        
+LDAPCLIENT_SERVER_KWARGS = [{'host': 'ldap.0.example.com',
+                            'port': 389,
+                            'use_ssl': False},
+                            {'host': 'ldap.1.example.com',
+                             'port': 389,
+                             'use_ssl': False}]  
 """
 
-LDAPCLIENT_HOSTS = [('ldap.0.example.com', 389), ('ldap://ldap.1.example.com:389',),]
+LDAPCLIENT_SERVER_POOL_KWARGS = None
 """
-2-tuple of host-port pair passed as 1st & 2nd args to ldap3.Server, or ...
+See documentation for ldap3.ServerPool at https://ldap3.readthedocs.io/en/latest/server.html 
 
-1-tuple with single uri in form <scheme>://<hostname>:<hostport>, where <scheme> is ldap, ldaps 
-or ldapi, or ...
-
-iterables of these if using server pool
-"""
-
-LDAPCLIENT_SERVER_KWARGS = {'use_ssl': False, 'tls': None}
-"""
-Dict of kwargs to pass to ldap3.Server, or iterable of such if these differ by server (in which case
-MUST NOT be shorter than LDAPCLIENT_HOSTS.  Pass a nested dict of kwargs under 'tls' key to construct Tls object
-"""
-
-LDAPCLIENT_CONN_KWARGS = None
-"""
-None or dict of kwargs passed to ldap3.Connection constructor
-"""
-
-LDAPCLIENT_SERVER_POOL_KWARGS = {'pool_strategy': ROUND_ROBIN,
+dict of keyword args excluding servers to pass to ldap3.ServerPool constructor (if using) 
+E.g.,
+LDAPCLIENT_SERVER_POOL_KWARGS = {'pool_strategy': ldap3.ROUND_ROBIN,
                                  'active': True,
                                  'exhaust': False,
                                  'single_state': True}
 """
-These are passed to ServerPool constructor, if LDAPCLIENT_SERVER_POOL is True
-"""
-                                 
 
-LDAPCLIENT_CUSTOM_CONNECTION = None
-"""
-Your own lambda for ldap3's Connection. If you need a custom connection
-pass it as a lambda that takes a username and a password and returns an
-initialized Connection.
-
-For example:
-
-.. code-block:: python
-
-    LDAPCLIENT_CUSTOM_CONNECTION = lambda user, password: Connection(...)
-
-"""
 
 # TODO later
 # LDAPCLIENT_ADMIN_ACCOUNT = 'uid=admin,ou=people,dc=example,dc=com'
@@ -106,23 +94,49 @@ user account will be used.
 # LDAPCLIENT_ADMIN_PASSWORD = 'NOTIT'
 """Admin LDAP account password."""
 
-LDAPCLIENT_BIND_BASE = 'ou=people,dc=example,dc=com'
-"""Base for binding to LDAP. Your application MUST override this."""
-
-
-LDAPCLIENT_SEARCH_BASE = 'dc=example,dc=com'
-"""Base for binding to LDAP. Your application MUST override this."""
-
-LDAPCLIENT_SEARCH_FILTER = None
-
-
-LDAPCLIENT_USERNAME_ATTRIBUTE = 'uid'
+LDAPCLIENT_BIND_BASE = None
 """
-Username LDAP attribute.
-Prepended to ``LDAPCLIENT_BIND_BASE`` with the username from the log in form
-for binding, resulting in:
+Callable[[str],str]
 
-    ``uid=FORM-USERNAME,ou=people,dc=example,dc=com``
+Takes login_form.username and returns str to pass as user argument in ldap3.Connection constructor
+
+E.g., 
+LDAPCLIENT_USERNAME_TO_DIRECTORY_USER = lambda username : f'uid={username},ou=People,dc=example,dc=com'
+"""
+
+LDAPCLIENT_CONNECTION_KWARGS = None
+"""
+None or dict of remaining keyword args to pass to ldap3.Connection constructor after 
+server, user, password, which are passed by the implementation
+
+See docs at https://ldap3.readthedocs.io/en/latest/connection.html
+"""
+
+LDAPCLIENT_USER_SEARCH_BASE = 'dc=example,dc=com'
+"""
+str
+
+Passed to ldap.Connection.search as search_base parameter when searching DIT for user
+"""
+
+
+LDAPCLIENT_USER_SEARCH_FILTER = None
+"""
+Callable[[str],str]
+
+Takes login_form.username and returns str to pass to
+ldap3.Connection.search as search_filter argument when searching DIT for user
+
+E.g.,
+LDAPCLIENT_USER_SEARCH_FILTER = lambda username : f'(&(uid={username})(objectClass=posixAccount))'
+"""
+
+LDAPCLIENT_USER_SEARCH_KWARGS = None
+"""
+dict of remaining keyword args to pass to ldap3.Connection.search
+
+E.g.,
+LDAPCLIENT_USER_SEARCH_KWARGS = {attributes: ldap3.ALL_ATTRIBUTES}
 """
 
 LDAPCLIENT_EMAIL_ATTRIBUTE = 'mail'
@@ -131,7 +145,28 @@ LDAPCLIENT_EMAIL_ATTRIBUTE = 'mail'
 LDAPCLIENT_FULL_NAME_ATTRIBUTE = 'displayName'
 """Full name LDAP attribute."""
 
-LDAPCLIENT_SEARCH_ATTRIBUTES = None
-"""List of attributes to fetch from LDAP. Defaults to all of them (``'*'``)."""
 
-LDAPCLIENT_GROUP_FILTERS = []
+LDAPCLIENT_GROUP_SEARCH_BASE = 'ou=Groups,dc=example,dc=com'
+"""
+str
+
+Passed to ldap.Connection.search as search_base parameter when searching DIT for groups
+"""
+
+LDAPCLIENT_GROUP_SEARCH_FILTERS = None
+"""
+iter[Callable[[str],str]]
+
+each callable takes login_form.username and return str to pass to
+ldap3.Connection.search as search_filter argument when searching DIT for group with user as 
+member
+
+E.g.,
+LDAPCLIENT_GROUP_FILTERS = [lambda u : f'(&(memberUid={u})(objectClass=posixGroup)(cn=group1))',
+                            lambda u : f'(&(memberUid={u})(objectClass=posixGroup)(cn=group2))']
+"""
+
+
+
+
+

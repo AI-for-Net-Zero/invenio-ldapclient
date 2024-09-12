@@ -12,8 +12,6 @@ def get_config(app):
 
     return dict([strip_prefix(i) for i in items if i[0].startswith(prefix)])
 
-
-
 def config_value(key, app=None, default=None):
     """ Also lifted from flask-security.
     Get an invenio-ldapclient config value
@@ -26,12 +24,12 @@ def config_value(key, app=None, default=None):
     app = app or current_app
     return get_config(app).get(key.upper(), default)
 
-
+'''
 def _tls_dict_to_object(kwargs):
-    '''
+
     Allow specifying a custom Tls object directly through config
     as well as params to construct ldap3.Tls
-    '''
+   
     obj = kwargs.get('tls', None)
     if obj and isinstance(obj, dict):
         kwargs_copy = kwargs.copy()
@@ -44,9 +42,11 @@ def _tls_dict_to_object(kwargs):
         return kwargs_copy
     else:
         return kwargs
-
+'''
 def ldap_connection(form):
     """Make LDAP connection based on configuration."""
+    cv = config_value
+
     form_pass = form.password.data
     form_user = form.username.data
     
@@ -58,20 +58,19 @@ def ldap_connection(form):
     #        form_user, form_pass
     #    )
     # --------->
-    ldap_user = "{}={},{}".format(
-        current_app.config['LDAPCLIENT_USERNAME_ATTRIBUTE'],
-        form_user,
-        current_app.config['LDAPCLIENT_BIND_BASE']
-    )
-
+    bind_base = cv('bind_base')
+    
+    ldap_user = bind_base(form_user)
     servers = current_app.extensions['invenio-ldapclient'].servers
-    conn = Connection(servers, ldap_user, form_pass, **current_app.config['LDAPCLIENT_CONN_KWARGS'])
+    conn = Connection(servers, ldap_user, form_pass, **cv('connection_kwargs'))
 
     return conn
 
 def check_group_memberships(form, connection):
-    search_base = current_app.config['LDAPCLIENT_SEARCH_BASE']
-    group_filters = current_app.config['LDAPCLIENT_GROUP_FILTERS']
+    cv = config_value
+    
+    search_base = cv('group_search_base')
+    group_filters = cv('group_filters')
 
     group_member = ( connection.search(search_base, f(form.username.data), attributes=ALL_ATTRIBUTES)
                      for f in group_filters )
@@ -79,19 +78,22 @@ def check_group_memberships(form, connection):
 
     form.group = any(group_member)
     
-
 def ldap_search(connection, username):
     """Fetch the user entry from LDAP."""
-    search_attribs = current_app.config['LDAPCLIENT_SEARCH_ATTRIBUTES']
-    if search_attribs is None:
-        search_attribs = ALL_ATTRIBUTES
+    cv = config_value
 
-    connection.search(
-        current_app.config['LDAPCLIENT_SEARCH_BASE'],
-        '({}={})'.format(
-            current_app.config['LDAPCLIENT_USERNAME_ATTRIBUTE'], username
-        ),
-        attributes=search_attribs)
+    search_base = cv('user_search_base')
+    filter_callable = cv('user_search_filter')
+    search_filter = filter_callable(username) if filter_callable else None
+    search_kwargs = cv('user_search_kwargs')
+    
+    if search_kwargs is None:
+        search_kwargs = {}
+        
+    if not search_kwargs.get('attributes', None):
+        search_kwargs['attributes'] = ALL_ATTRIBUTES
+
+    connection.search(search_base, search_filter, **search_kwargs)
     
 def get_user(form):
     pass
