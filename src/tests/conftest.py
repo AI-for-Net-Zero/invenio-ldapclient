@@ -58,6 +58,8 @@ def configured_app(app):
     bind_base = lambda u : f'uid={u},ou=People,ou=Local,o=Example,dc=example,dc=com'
     
     app.config.update(WTF_CSRF_ENABLED = False,
+                      COVER_TEMPLATE = 'some/template.html',
+                      LDAPCLIENT_EXCLUSIVE_AUTHENTICATION = True,
                       LDAPCLIENT_SERVER_KWARGS = {
                           'host': 'ldap.0.example.com',
                           'port': 389,
@@ -81,6 +83,7 @@ def strangely_configured_app(app):
     bind_base = lambda u : f'uid={u},ou=People,o=Example,dc=example,dc=com'
     
     app.config.update(WTF_CSRF_ENABLED = False,
+                      LDAPCLIENT_EXCLUSIVE_AUTHENTICATION = True,
                       LDAPCLIENT_SERVER_KWARGS = {
                           'host': 'ldap.0.example.com',
                           'port': 389,
@@ -101,16 +104,17 @@ def configured_app_with_server_pool(app):
     bind_base = lambda u : f'uid={u},ou=People,ou=Local,o=Example,dc=example,dc=com'
     
     app.config.update(WTF_CSRF_ENABLED = False,
-                    LDAPCLIENT_SERVER_KWARGS = [
-                        {'host': 'ldap.0.example.com',
-                         'port': 389,
-                         'use_ssl': False,
-                         'tls': None},
-                    {
-                        'host': 'ldap.1.example.com',
-                        'port': 389,
-                        'use_ssl': False,
-                        'tls': None},],
+                      LDAPCLIENT_EXCLUSIVE_AUTHENTICATION = True,
+                      LDAPCLIENT_SERVER_KWARGS = [
+                          {'host': 'ldap.0.example.com',
+                           'port': 389,
+                           'use_ssl': False,
+                           'tls': None},
+                          {'host': 'ldap.1.example.com',
+                           'port': 389,
+                           'use_ssl': False,
+                           'tls': None},],
+                      LDAPCLIENT_SERVER_POOL_KWARGS = {'active': True, 'exhaust': False, 'pool_strategy': ROUND_ROBIN}, 
                       LDAPCLIENT_FULL_NAME_ATTRIBUTE = 'displayName',
                       LDAPCLIENT_BIND_BASE = bind_base,
                       LDAPCLIENT_USER_SEARCH_BASE = 'ou=People,ou=Local,o=Example,dc=example,dc=com',
@@ -118,7 +122,7 @@ def configured_app_with_server_pool(app):
                       LDAPCLIENT_CONNECTION_KWARGS = {'client_strategy': MOCK_SYNC},
                       LDAPCLIENT_GROUP_SEARCH_BASE = 'ou=Groups,ou=Local,o=Example,dc=example,dc=com',
                       LDAPCLIENT_GROUP_FILTERS = group_filters
-                      )
+                )
     return app
 
 

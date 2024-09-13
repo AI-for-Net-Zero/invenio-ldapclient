@@ -46,7 +46,6 @@ class InvenioLDAPClient(object):
         state = _LDAPServers(server_kwargs = cv('server_kwargs', app),                            
                              server_pool_kwargs = cv('server_pool_kwargs', app))
                              
-
         if cv('exclusive_authentication'):
             # Set invenio_accounts login-view config option
             # ... config, view-function, template ...what else? 
@@ -59,6 +58,7 @@ class InvenioLDAPClient(object):
         else:
             raise NotImplementedError
             #blueprint = create_blueprint(app)
+            #register_blueprint
         
         app.extensions['invenio-ldapclient'] = state
 
@@ -72,27 +72,4 @@ class InvenioLDAPClient(object):
 
         for k in dir(config):
             if k.startswith('LDAPCLIENT_'):
-                '''
-                dicts are mutable and unit tests end up mutating config module,
-                hence the copy
-                '''
-                if isinstance( getattr(config, k), dict):
-                    app.config.setdefault(k, getattr(config, k).copy() )
-                else:
-                    app.config.setdefault(k, getattr(config, k))
-
-        if not app.config['LDAPCLIENT_AUTHENTICATION']:
-            return
-
-        if app.config['LDAPCLIENT_EXCLUSIVE_AUTHENTICATION']:
-            @app.before_first_request #Flask.before_first request is deprecated
-            def ldap_login_view_setup():
-                from .views import ldap_login
-                app.view_functions['security.login'] = ldap_login
-                app.extensions['security'].login_manager.login_view = \
-                    'invenio_ldapclient.ldap_login'
-                
-
-            app.config['SECURITY_LOGIN_USER_TEMPLATE'] = (
-                app.config['LDAPCLIENT_LOGIN_USER_TEMPLATE']
-            )
+                app.config.setdefault(k, getattr(config, k))
