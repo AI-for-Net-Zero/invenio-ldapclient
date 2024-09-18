@@ -12,15 +12,19 @@ from __future__ import absolute_import, print_function
 import shutil
 import tempfile
 import importlib.resources
+from unittest.mock import Mock
 
 import pytest
 from flask import Flask
 from flask_babel import Babel
 from invenio_i18n import InvenioI18N
+from invenio_accounts.profiles.dicts import UserProfileDict
 
 from ldap3 import Server, ServerPool, Connection, MOCK_SYNC, ROUND_ROBIN
 import ssl
 test_resource_path = str(importlib.resources.files('tests')/'resources')
+
+
 
 @pytest.fixture()
 def instance_path():
@@ -270,6 +274,61 @@ def mock_server_factory():
             return server
         
     return _factory
+
+@pytest.fixture()
+def mock_login_form_factory_factory():
+    def _factory(username='spongebob',
+                 email='spongebob@example.com',
+                 full_name='Sponge Bob',
+                 next='/bikini/bottom/'):
+
+        mock_form = Mock(username = Mock(data = username),
+                         email = email,
+                         full_name = full_name,
+                         next = Mock(data = next),
+                         validate_on_submit = lambda:True)
+        
+        mockLoginForm = Mock(return_value = mock_form)
+
+        mock_login_form_factory = Mock(return_value = mockLoginForm)
+
+        return mock_login_form_factory
+
+    return _factory
+
+@pytest.fixture()
+def mock_user_factory():
+    def _factory(username='spongebob',
+                 email='spongebob@example.com',
+                 full_name='Sponge Bob',
+                 affiliations=['The Krusty Krab']):
+
+        mock_user = Mock(username = 'spongebob',
+                         email = 'spongebob@example.com',
+                         user_profile = UserProfileDict(full_name=full_name,
+                                                        affiliations=affiliations))
+        
+        return mock_user
+    return _factory
+                 
+                 
+
+@pytest.fixture()
+def mock_User_factory_find_by_username():
+    def _factory():
+        pass
+
+    return _factory
+
+@pytest.fixture()
+def mock_User_factory_find_by_email():
+    def _factory():
+        pass
+
+    return _factory
+
+
+
 
 
 
