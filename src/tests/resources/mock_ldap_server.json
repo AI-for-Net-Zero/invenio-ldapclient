@@ -8,8 +8,7 @@
             ""
         ],
         "namingContexts": [
-            "dc=ae,dc=ic,dc=ac,dc=uk",
-            "o=Aero"
+            "dc=example,dc=com"
         ],
         "objectClass": [
             "top",

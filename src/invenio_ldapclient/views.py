@@ -9,204 +9,14 @@ from flask import current_app
 from flask import flash, redirect, render_template, request
 from flask_security import login_user
 from flask_security.decorators import anonymous_user_required
-from invenio_accounts.models import User
-from invenio_db import db
+from flask_security.utils import get_post_login_redirect
 from ldap3 import ALL, ALL_ATTRIBUTES, Connection, Server, Tls, ServerPool, ROUND_ROBIN
-from werkzeug.local import LocalProxy
+
 
 from sqlalchemy import select
-#from .django import url_has_allowed_host_and_scheme
 from invenio_ldapclient.forms import login_form_factory
-from invenio_ldapclient.utils import get_user
-
-_security = LocalProxy(lambda: current_app.extensions['security'])
-_datastore = LocalProxy(lambda: _security.datastore)
-
-
-def _commit(response=None):
-    _datastore.commit()
-    return response
-
-def _ldap_connection(form):#, app = current_app):
-    """Make LDAP connection based on configuration."""
-    if not form.validate_on_submit():
-        return False
-
-    form_pass = form.password.data
-    form_user = form.username.data
-    if not form_user or not form_pass:
-        return False
-
-    # <---------
-    # LB: use plug-ins? - commenting out for now
-    #
-    #if app.config['LDAPCLIENT_CUSTOM_CONNECTION']:
-    #    return app.config['LDAPCLIENT_CUSTOM_CONNECTION'](
-    #        form_user, form_pass
-    #    )
-    # --------->
-
-
-    ldap_user = "{}={},{}".format(
-        current_app.config['LDAPCLIENT_SEARCH']['username_attribute'],
-        form_user,
-        current_app.config['LDAPCLIENT_SEARCH']['bind_base']
-    )
-
-    servers = current_app.extensions['invenio-ldapclient'].servers
-    
-    conn = Connection(servers, ldap_user, form_pass)
-    
-    if not ( conn and conn.bind() ):
-        return None
-
-    search_base = current_app.config['LDAPCLIENT_SEARCH']['search_base']
-    group_filters = current_app.config['LDAPCLIENT_SEARCH']['group_filters']
-
-    group_member = ( conn.search(search_base, f(form_user), attributes=ALL_ATTRIBUTES)
-                     for f in group_filters )
-
-    if any(group_member):
-        return conn
-
-    else:
-        conn.unbind()
-        return None
-        
-
-def _search_ldap(connection, username):
-    """Fetch the user entry from LDAP."""
-    search_attribs = current_app.config['LDAPCLIENT_SEARCH']['search_attributes']
-    if search_attribs is None:
-        search_attribs = ALL_ATTRIBUTES
-
-    connection.search(
-        current_app.config['LDAPCLIENT_SEARCH']['search_base'],
-        '({}={})'.format(
-            current_app.config['LDAPCLIENT_SEARCH']['username_attribute'], username
-        ),
-        attributes=search_attribs)
-
-
-def _register_or_update_user(entries, user_account=None):
-    """Register or update a user."""
-    email = entries[current_app.config['LDAPCLIENT_SEARCH']['email_attribute']].values[0]
-    username = entries[current_app.config['LDAPCLIENT_SEARCH']['username_attribute']].values[0]
-    if 'fullname_attribute' in current_app.config['LDAPCLIENT_SEARCH']:
-        full_name = entries[current_app.config[
-            'LDAPCLIENT_SEARCH']['fullname_attribute'
-        ]].values[0]
-
-    if user_account is None:
-        kwargs = dict(email=email, active=True, password=uuid.uuid4().hex)
-        _datastore.create_user(**kwargs)
-        user_account = User.query.filter_by(email=email).one_or_none()
-
-        user_account.username = username
-        if 'fullname_attribute' in current_app.config['LDAPCLIENT_SEARCH']:
-            user_account.user_profile = {'full_name': full_name}
-            
-        db.session.add(user_account)
-        return user_account
-    else:
-        user_account.username = username
-        if 'fullname_attribute' in current_app.config['LDAPCLIENT_SEARCH']:
-            user_account.user_profile = {'full_name': full_name}
-        
-        user_account.email = email
-        db.session.add(user_account)
-        return user_account
-
-
-def _find_or_register_user(connection, username):
-    """Find user by email, username or register a new one."""
-    _search_ldap(connection, username)
-
-    entries = connection.entries[0]
-    if not entries:
-        return None
-
-    try:
-        email = entries[current_app.config['LDAPCLIENT_SEARCH']['email_attribute']].values[0]
-    except IndexError:
-        # Email is required
-        return None
-
-    # Try by username first
-    user = User.query.filter_by(username=username).one_or_none()
-
-    # Try by email next
-    if not user and current_app.config['LDAPCLIENT_FIND_BY_EMAIL']:
-        user = User.query.filter_by(email=email).one_or_none()
-
-    if user:
-        if not user.active:
-            return None
-        return _register_or_update_user(entries, user_account=user)
-
-    # Register new user
-    if current_app.config['LDAPCLIENT_AUTO_REGISTRATION']:
-        return _register_or_update_user(entries)
-
-
-#@blueprint.route('/ldap-login', methods=['GET', 'POST'])
-'''
-def ldap_login():
-
-    LDAP login form view.
-
-    Process login request using LDAP and register
-    the user if needed.
-
-    <----- in .utils.find_or_register_user
-    1. search for form.user (set in form.validate, called by form.validate_on_submit)
-       in app _datastore by (i) username, (ii) email (if configured).
-    2. return User instance, creating one, if necessary
-      ----->     
-               
-       We don't want directory group membership and user.active logic in the same application
-               if these are going to get out of sync with each other.  Therefore, if we set LDAP
-               to be sole auth. mechanism in config, then at this stage set user.is_active = True in
-               _datastore
-          
-
-    form = login_form_factory(current_app)()
-
-    if form.validate_on_submit():
-
-        connection = _ldap_connection(form)
-
-        if connection and connection.bind():
-            after_this_request(_commit) #<--- Should this move ...
-            user = _find_or_register_user(connection, form.username.data)
-
-            if user and login_user(user, remember=False):
-                #<--- to here?
-                next_page = request.args.get('next')
-
-                # Only allow relative URL for security
-                if not url_has_allowed_host_and_scheme(next_page,
-                                                       allowed_hosts = None,
-                                                       require_https = \
-                                                       current_app.config['LDAPCLIENT_REQUIRE_HTTPS']):
-                
-                    next_page = current_app.config['SECURITY_POST_LOGIN_VIEW']
-
-                connection.unbind()
-                db.session.commit()
-                return redirect(next_page)
-            else:
-                connection.unbind()
-                flash("We couldn't log you in, please contact your administrator.")  # noqa
-
-        else:
-            flash("We couldn't log you in, please check your password.")
-
-    return render_template(
-        current_app.config['SECURITY_LOGIN_USER_TEMPLATE'],
-        login_user_form=form
-    )
-'''
+from invenio_ldapclient.utils import config_value as cv
+from invenio_ldapclient.db import find_or_register_user, add_user, update_user, _commit
 
 def create_blueprint(app):
     blueprint = Blueprint(
@@ -222,13 +32,12 @@ def create_blueprint(app):
 
 @anonymous_user_required
 def login_via_ldap():
-    login_form = login_form_factory(current_app)()
+    form = login_form_factory(current_app)()
 
     if form.validate_on_submit():
-        user = get_user(form)
+        user = find_or_register_user(form)
         login_user(user)
-        after_this_request(_commit)
-
+        after_this_request(_commit) #Calls db.session.commit()
         return redirect(get_post_login_redirect(form.next.data))
 
     else:

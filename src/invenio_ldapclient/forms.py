@@ -59,6 +59,9 @@ def login_form_factory(app):
 
 
         def validate(self, extra_validators=None):
+            '''
+            To do - this should not return before all validation steps have been taken.
+            '''
             if not super(LoginForm, self).validate(extra_validators=extra_validators):
                 return False
 
@@ -94,7 +97,10 @@ def validate_form_and_get_user(login_form):
        4. call ldap search, getting configured search attribs, set email & full_name
           return
        ------>
-     """
+    
+    To do - this should not return before all validation steps have been taken.  Check exception 
+    handling
+    """
     login_form.bind = None
     login_form.group = None
     login_form.email = None
@@ -105,9 +111,7 @@ def validate_form_and_get_user(login_form):
             login_form.bind = True
             
             check_group_memberships(login_form, connection)
-            if login_form.group is False:
-                return
-
+        
             ldap_search(connection, login_form.username.data)
 
             try:
@@ -133,7 +137,6 @@ def validate_form_and_get_user(login_form):
 
     except LDAPBindError:    
         login_form.bind = False
-        return
 
 
     return

@@ -22,6 +22,10 @@ from invenio_accounts.profiles.dicts import UserProfileDict
 
 from ldap3 import Server, ServerPool, Connection, MOCK_SYNC, ROUND_ROBIN
 import ssl
+
+
+from .test_ldap_directory import *
+
 test_resource_path = str(importlib.resources.files('tests')/'resources')
 
 
@@ -75,7 +79,9 @@ def configured_app(app):
                       LDAPCLIENT_USER_SEARCH_FILTER = user_filter,
                       LDAPCLIENT_CONNECTION_KWARGS = {'client_strategy': MOCK_SYNC},
                       LDAPCLIENT_GROUP_SEARCH_BASE = 'ou=Groups,ou=Local,o=Example,dc=example,dc=com',
-                      LDAPCLIENT_GROUP_FILTERS = group_filters
+                      LDAPCLIENT_GROUP_FILTERS = group_filters,
+                      LDAPCLIENT_FIND_BY_EMAIL = True,
+                      SECURITY_LOGIN_USER_TEMPLATE = 'invenio_ldapclient/login_user.html'
                       )
     return app
 
@@ -99,7 +105,8 @@ def strangely_configured_app(app):
                       LDAPCLIENT_USER_SEARCH_FILTER = user_filter,
                       LDAPCLIENT_CONNECTION_KWARGS = {'client_strategy': MOCK_SYNC},
                       LDAPCLIENT_GROUP_SEARCH_BASE = 'ou=Groups,ou=Local,o=Example,dc=example,dc=com',
-                      LDAPCLIENT_GROUP_FILTERS = group_filters
+                      LDAPCLIENT_GROUP_FILTERS = group_filters,
+                      LDAPCLIENT_FIND_BY_EMAIL = True
                       )
     return app
 
@@ -125,7 +132,8 @@ def configured_app_with_server_pool(app):
                       LDAPCLIENT_USER_SEARCH_FILTER = user_filter,
                       LDAPCLIENT_CONNECTION_KWARGS = {'client_strategy': MOCK_SYNC},
                       LDAPCLIENT_GROUP_SEARCH_BASE = 'ou=Groups,ou=Local,o=Example,dc=example,dc=com',
-                      LDAPCLIENT_GROUP_FILTERS = group_filters
+                      LDAPCLIENT_GROUP_FILTERS = group_filters,
+                      LDAPCLIENT_FIND_BY_EMAIL = True
                 )
     return app
 
@@ -139,11 +147,11 @@ def mock_server_factory():
                                         test_resource_path + '/mock_ldap_server_schema.json')
 
         conn = Connection(server,
-                          user = 'uid=admin,dc=example,dc=com',
+                          user = 'cn=admin,dc=example,dc=com',
                           password = 'secret321',
                           client_strategy = MOCK_SYNC)
 
-        conn.strategy.add_entry('uid=admin,dc=example,dc=com',
+        conn.strategy.add_entry('cn=admin,dc=example,dc=com',
                                 {'userPassword': 'secret321'})
 
         with conn:
@@ -168,7 +176,11 @@ def mock_server_factory():
             conn.add(dn=dn,
                      object_class='organizationalUnit')
 
-            #Sited in different part of DIT
+            #sited in different part of DIT
+            #has everything: mail, displayName and group membership
+            #does not belong to required groups (green or blue)
+            #no email attribute
+            #no displayName
             uidNumber = 0
             dn = f'uid=testuser{uidNumber},ou=People,o=Example,dc=example,dc=com'
             conn.add(dn=dn,
@@ -183,7 +195,7 @@ def mock_server_factory():
                                  'userPassword': 'secret123'
                                  })
 
-            #Has everything: mail, displayName and group membership
+            
             uidNumber = 1
             dn = f'uid=testuser{uidNumber},ou=People,ou=Local,o=Example,dc=example,dc=com'
             conn.add(dn=dn,
@@ -198,7 +210,7 @@ def mock_server_factory():
                                  'userPassword': 'secret123'
                                  })
 
-            #Does not belong to required groups (green or blue)
+            
             uidNumber = 2
             dn = f'uid=testuser{uidNumber},ou=People,ou=Local,o=Example,dc=example,dc=com'
             conn.add(dn=dn,
@@ -213,7 +225,7 @@ def mock_server_factory():
                                  'userPassword': 'secret123'
                                  })
 
-            #No email attribute
+            
             uidNumber = 3
             dn = f'uid=testuser{uidNumber},ou=People,ou=Local,o=Example,dc=example,dc=com'
             conn.add(dn=dn,
@@ -227,7 +239,7 @@ def mock_server_factory():
                                  'userPassword': 'secret123'
                                  })
 
-            #No displayName
+            
             uidNumber = 4
             dn = f'uid=testuser{uidNumber},ou=People,ou=Local,o=Example,dc=example,dc=com'
             conn.add(dn=dn,
@@ -277,6 +289,13 @@ def mock_server_factory():
 
 @pytest.fixture()
 def mock_login_form_factory_factory():
+    '''
+    For unit testing .views.login_via_ldap
+
+    State of form just before .validate_on_submit() is called.
+    Potentially holds attributes for full_name and affiliations found in
+    directory as well as "next", pulled out of request context
+    '''
     def _factory(username='spongebob',
                  email='spongebob@example.com',
                  full_name='Sponge Bob',

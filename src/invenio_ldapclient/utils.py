@@ -94,6 +94,7 @@ def ldap_search(connection, username):
         search_kwargs['attributes'] = ALL_ATTRIBUTES
 
     connection.search(search_base, search_filter, **search_kwargs)
+
+
     
-def get_user(form):
-    pass
+                 
