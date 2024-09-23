@@ -31,6 +31,8 @@ def create_blueprint(app):
 
     return blueprint
 
+
+
 @anonymous_user_required
 def login_via_ldap():
     form = login_form_factory(current_app)()

@@ -57,6 +57,7 @@ def add_external_users(server, user, passwd, responses=None, n=20, unit_testing=
             
             conn.modify(dn=dn,
                         changes={'userPassword': [(ldap3.MODIFY_ADD, ['secret123'])]})
+
             
             if not unit_testing:
                 responses.append( (dn, conn.result) )
