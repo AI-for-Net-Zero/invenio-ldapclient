@@ -3,14 +3,7 @@ import json
 
 from ldap3 import Server
 
-<<<<<<< Updated upstream
-from add_org_units import add_organisational_units
-from add_users import add_local_users, add_external_users
-from add_groups import add_groups
-from final import final
-=======
 from test_ldap_directory import *
->>>>>>> Stashed changes
 
 if __name__ == '__main__':
     url=os.environ.get('LDAP_URL', None)

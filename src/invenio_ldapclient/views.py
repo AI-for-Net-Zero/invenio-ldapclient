@@ -10,6 +10,7 @@ from flask import flash, redirect, render_template, request
 from flask_security import login_user
 from flask_security.decorators import anonymous_user_required
 from flask_security.utils import get_post_login_redirect
+
 from ldap3 import ALL, ALL_ATTRIBUTES, Connection, Server, Tls, ServerPool, ROUND_ROBIN
 
 

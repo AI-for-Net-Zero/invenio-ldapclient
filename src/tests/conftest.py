@@ -24,7 +24,6 @@ from ldap3 import Server, ServerPool, Connection, MOCK_SYNC, ROUND_ROBIN
 import ssl
 
 
-from .test_ldap_directory import *
 
 test_resource_path = str(importlib.resources.files('tests')/'resources')
 
