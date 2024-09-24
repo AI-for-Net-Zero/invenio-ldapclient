@@ -68,3 +68,5 @@ target/
 
 .venv
 **~
+
+src/tests/integration_test/instance/minimal.db

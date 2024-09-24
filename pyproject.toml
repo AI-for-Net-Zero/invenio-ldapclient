@@ -35,7 +35,10 @@ name = "Galter Health Sciences Library & Learning Center"
 email = "galter-is@listserv.it.northwestern.edu"
 
 [project.optional-dependencies]
-dev = ["pytest", "coverage", "sphinx", "pip-tools"]
+dev = ["pytest", "coverage", "sphinx", "pip-tools", "invenio-access"]
+
+[project.entry-points."invenio_base.apps"]
+invenio_ldapclient = "invenio_ldapclient:InvenioLDAPClient"
 
 [build-system]
 requires = ["setuptools"]
