@@ -296,13 +296,14 @@ def mock_login_form_factory_factory():
     def _factory(username='spongebob',
                  email='spongebob@example.com',
                  full_name='Sponge Bob',
-                 next='/bikini/bottom/'):
+                 next='/bikini/bottom/',
+                 validate_on_submit = lambda:True):
 
         mock_form = Mock(username = Mock(data = username),
                          email = email,
                          full_name = full_name,
                          next = Mock(data = next),
-                         validate_on_submit = lambda:True)
+                         validate_on_submit = validate_on_submit)
         
         mockLoginForm = Mock(return_value = mock_form)
 
