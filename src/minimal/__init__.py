@@ -46,24 +46,30 @@ LOGOUT_PAGE = """
 """
 
 def create_app():
+    INSTANCE_PATH = os.environ.get('INSTANCE_PATH')
+    print(INSTANCE_PATH)
+
+    
     search_filter = lambda username : f'(&(uid={username})(objectClass=posixAccount))'
     group_filters = [lambda username : f'(&(memberUid={username})(cn=cats)(objectClass=posixGroup))',
                      lambda username : f'(&(memberUid={username})(cn=dogs)(objectClass=posixGroup))']
 
     app = Flask('minimal',
-                instance_path=os.environ.get('INSTANCE_PATH'),
+                instance_path=INSTANCE_PATH,
                 instance_relative_config=True,
                 template_folder='templates')
 
-    print(os.environ.get('INSTANCE_PATH'))
+    assert app.instance_path == INSTANCE_PATH
 
     db_uri = 'sqlite:///' + os.path.join(app.instance_path, 'minimal.db')
 
+    app.config.from_pyfile('config.py')
+    assert app.config.get('SECRET_KEY', None) == 'secret'
+
     InvenioI18N(app)
     InvenioDB(app)
-    '''
-    InvenioAccountsUI(app)
     InvenioLDAPClient(app)
+    InvenioAccountsUI(app)
 
     @app.route('/')
     @login_required
@@ -79,9 +85,7 @@ def create_app():
     def logout():
         logout_user()
         return LOGOUT_PAGE
-    
-    
-    '''
+
     return app
 
 

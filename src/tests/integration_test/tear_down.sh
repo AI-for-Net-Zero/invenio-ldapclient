@@ -1,4 +1,9 @@
 # Stop app in dev server
-# Destroy app db (and instance folder)
+
+# Destroy app db
+flask --app minimal:create_app db destroy --yes-i-know
+
 # Stop ldap server
-lxc-stop ldap2_debian_bookworm_amd64
+CONTAINER_NAME=`cat ldap_container_name`
+lxc-stop -n ${CONTAINER_NAME} &> /dev/null
+
