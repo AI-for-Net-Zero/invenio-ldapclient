@@ -108,6 +108,31 @@ def strangely_configured_app(app):
     return app
 
 @pytest.fixture()
+def very_strangely_configured_app(app):
+    '''
+    This is just to hit the if not connection.entries branch in .forms
+    '''
+    bind_base = lambda u : f'uid={u},ou=People,o=Example,dc=example,dc=com'
+    
+    app.config.update(WTF_CSRF_ENABLED = False,
+                      LDAPCLIENT_EXCLUSIVE_AUTHENTICATION = True,
+                      LDAPCLIENT_SERVER_KWARGS = {
+                          'host': 'ldap.0.example.com',
+                          'port': 389,
+                          'use_ssl': False,
+                          'tls': None},
+                      LDAPCLIENT_FULL_NAME_ATTRIBUTE = 'displayName',
+                      LDAPCLIENT_BIND_BASE = bind_base,
+                      LDAPCLIENT_USER_SEARCH_BASE = 'ou=Local,o=Example,dc=example,dc=com',
+                      LDAPCLIENT_USER_SEARCH_FILTER = user_filter,
+                      LDAPCLIENT_CONNECTION_KWARGS = {'client_strategy': MOCK_SYNC},
+                      LDAPCLIENT_GROUP_SEARCH_BASE = 'ou=Groups,ou=Local,o=Example,dc=example,dc=com',
+                      LDAPCLIENT_GROUP_FILTERS = None,
+                      LDAPCLIENT_FIND_BY_EMAIL = True
+                      )
+    return app
+
+@pytest.fixture()
 def configured_app_with_server_pool(app):
     bind_base = lambda u : f'uid={u},ou=People,ou=Local,o=Example,dc=example,dc=com'
     
@@ -173,11 +198,11 @@ def mock_server_factory():
             conn.add(dn=dn,
                      object_class='organizationalUnit')
 
-            #sited in different part of DIT
-            #has everything: mail, displayName and group membership
-            #does not belong to required groups (green or blue)
-            #no email attribute
-            #no displayName
+            dn = 'ou=SomeSubOrg,ou=People,ou=Local,o=Example,dc=example,dc=com'
+            conn.add(dn=dn,
+                     object_class='organizationalUnit')
+
+
             uidNumber = 0
             dn = f'uid=testuser{uidNumber},ou=People,o=Example,dc=example,dc=com'
             conn.add(dn=dn,
@@ -249,6 +274,35 @@ def mock_server_factory():
                                  'mail': f'testuser{uidNumber}@example.com',
                                  'userPassword': 'secret123'
                                  })
+
+            uidNumber = 5
+            dn = f'uid=testuser{uidNumber},ou=People,ou=Local,o=Example,dc=example,dc=com'
+            conn.add(dn=dn,
+                     object_class=['inetOrgPerson','posixAccount','shadowAccount'],
+                     attributes={'homeDirectory': f'/home/testuser{uidNumber}',
+                                 'sn': 'Testuser',
+                                 'cn': f'Test User {uidNumber}',
+                                 'displayName': f'Test User {uidNumber}',
+                                 'uidNumber': uidNumber,
+                                 'gidNumber': 0,
+                                 'mail': f'testuser{uidNumber}@example.com',
+                                 'userPassword': 'secret123'
+                                 })
+            
+            dn = f'uid=testuser{uidNumber},ou=SomeSubOrg,ou=People,ou=Local,o=Example,dc=example,dc=com'
+            conn.add(dn=dn,
+                     object_class=['inetOrgPerson','posixAccount','shadowAccount'],
+                     attributes={'homeDirectory': f'/home/testuser{uidNumber}',
+                                 'sn': 'Duped Testuser',
+                                 'cn': f'Duped Test User {uidNumber}',
+                                 'displayName': f'Duped Test User {uidNumber}',
+                                 'uidNumber': uidNumber,
+                                 'gidNumber': 0,
+                                 'mail': f'duped_testuser{uidNumber}@yahoomail.com',
+                                 'userPassword': 'secret123'
+                                 })
+
+
 
             #Red group: all users
             dn = 'cn=red,ou=Groups,ou=Local,o=Example,dc=example,dc=com'

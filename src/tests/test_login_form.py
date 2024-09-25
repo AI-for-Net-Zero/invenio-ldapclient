@@ -97,7 +97,7 @@ def test_username_password_invalid(configured_app, mock_server_factory):
 
     inner()
 
-def test_user_not_in_group(configured_app, mock_server_factory):
+def test_user_no_access_permissions(configured_app, mock_server_factory):
     app = configured_app
     server = mock_server_factory('ldap.mock')
     mockServerCls = Mock(return_value = server)
@@ -115,7 +115,8 @@ def test_user_not_in_group(configured_app, mock_server_factory):
             login_form = login_form_factory(app)()
             assert login_form.is_submitted()
             assert not login_form.validate()
-            assert 'User access not permitted' in login_form.errors['username']
+            assert 'Login failed (access permission).  Contact administrator.' \
+                in login_form.errors['username']
 
     inner()
 
@@ -162,7 +163,56 @@ def test_no_display_name(configured_app, mock_server_factory):
             assert login_form.is_submitted()
             assert login_form.validate()
 
-    inner()    
+    inner()
+
+def test_dup_username(configured_app, mock_server_factory):
+    app = configured_app
+    server = mock_server_factory('ldap.mock')
+    mockServerCls = Mock(return_value = server)
+
+    @patch('invenio_ldapclient.ext.Server', mockServerCls)
+    def inner():
+    
+        InvenioLDAPClient(app)
+        InvenioAccountsUI(app)
+        
+        with app.test_request_context(method = 'POST',
+                                      data = {'username': 'testuser5',
+                                              'password': 'secret123'}):
+
+            login_form = login_form_factory(app)()
+            assert not login_form.validate()
+            assert 'Login failed (duplicate username).  Contact administrator.' in \
+                login_form.errors['username']
+
+
+    inner()
+
+def test_no_access_permitted_at_all(very_strangely_configured_app,
+                                    mock_server_factory):
+    app = very_strangely_configured_app
+    server = mock_server_factory('ldap.mock')
+    mockServerCls = Mock(return_value = server)
+
+    @patch('invenio_ldapclient.ext.Server', mockServerCls)
+    def inner():
+    
+        InvenioLDAPClient(app)
+        InvenioAccountsUI(app)
+        
+        with app.test_request_context(method = 'POST',
+                                      data = {'username': 'testuser1',
+                                              'password': 'secret123'}):
+
+            login_form = login_form_factory(app)()
+            assert not login_form.validate()
+            assert 'Login failed (access permission).  Contact administrator.' \
+                in login_form.errors['username']
+
+
+    inner()
+
+    
 
 def test_all_good(configured_app, mock_server_factory):
     app = configured_app

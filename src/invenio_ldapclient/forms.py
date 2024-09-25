@@ -8,26 +8,15 @@ from flask_security.forms import Form, NextFormMixin
 from flask_security.utils import url_for_security, hash_password
 from wtforms import PasswordField, StringField, SubmitField, validators
 
-from .utils import ldap_connection, check_group_memberships, ldap_search
+from .utils import _ldap_anon_connection, _search_DIT, _check_access_permitted, config_value as cv
+
 
 from ldap3.core.exceptions import LDAPBindError, LDAPKeyError
-'''
-def login_form_factory(app):
-    """Hack to be able to pass current_app into the form."""
-    class LoginForm(Form):
-        """LDAP login form."""
 
-        username = StringField(
-            app.config['LDAPCLIENT_USERNAME_PLACEHOLDER'],
-            validators=[validators.InputRequired()]
-        )
-        password = PasswordField(
-            'Password',
-            validators=[validators.InputRequired()]
-        )
+_0_USERS_FOUND = '0_USERS_FOUND'
+_DUP_USERS_FOUND = 'DUP_USERS_FOUND'
+_USERNAME_PASSWD = 'USERNAME_PASSWD'
 
-    return LoginForm
-'''
 
 def login_form_factory(app):
     """Inserts e.g., current_app, into local namespace of form class"""
@@ -35,7 +24,7 @@ def login_form_factory(app):
         """LDAP login form."""
 
         username = StringField(
-            app.config['LDAPCLIENT_USERNAME_PLACEHOLDER'],
+            cv('username_placeholder', app),
             validators=[validators.InputRequired()]
         )
         password = PasswordField(
@@ -48,15 +37,6 @@ def login_form_factory(app):
             super(LoginForm, self).__init__(*args, **kwargs)
             if not self.next.data:
                 self.next.data = request.args.get('next', '')
-                
-            if current_app.extensions['security'].recoverable and \
-               not self.password.description:
-                html = Markup(u'<a href="{url}">{message}</a>'.format(
-                url=url_for_security("forgot_password"),
-                message="FORGOT_PASSWORD",
-            ))
-                self.password.description = html
-
 
         def validate(self, extra_validators=None):
             '''
@@ -68,24 +48,31 @@ def login_form_factory(app):
             validate_form_and_get_user(self)
             
             if not self.bind:
-                self.username.errors.append('Username and password not valid')
                 hash_password(self.password.data)
+
+                if self.bind_fail_reason == _DUP_USERS_FOUND:
+                    self.username.errors.append('Login failed (duplicate username).  Contact administrator.')
+                    #LOG something
+                else:
+                    self.username.errors.append('Username and password not valid')
+
                 return False
 
-            if not self.access_permitted:
-                self.username.errors.append('User access not permitted')
+            elif not self.access_permitted:
+                self.username.errors.append('Login failed (access permission).  Contact administrator.')
                 return False
 
-            if not self.email:
+            elif not self.email:
                 self.username.errors.append('User email not registered.')
                 return False
             
-            return True
+            else:
+                return True
 
     return LoginForm
 
 
-def validate_form_and_get_user(login_form):
+def validate_form_and_get_user(form):
     """1. run superclass's validators, quit on failure, otherwise
        
        <----- in .utils.ldap_connection &  .utils.ldap_search
@@ -101,44 +88,48 @@ def validate_form_and_get_user(login_form):
     To do - this should not return before all validation steps have been taken.  Check exception 
     handling
     """
-    login_form.bind = None
-    login_form.access_permitted = None
-    login_form.email = None
-    login_form.full_name = None
-
-    try:
-        with ldap_connection(login_form) as connection:
-            login_form.bind = True
-            
-            check_group_memberships(login_form, connection)
+    form.bind = None
+    form.bind_fail_reason = None
+    form.access_permitted = None
+    form.email = None
+    form.full_name = None
+    
+    with _ldap_anon_connection() as c:
+        _search_DIT(c, form)
+        #entries = c.entries
         
-            ldap_search(connection, login_form.username.data)
-
-            try:
-                entries = connection.entries[0]
+        if len(c.entries) == 0:
+            form.bind = False
+            form.bind_fail_reason = _0_USERS_FOUND
+            return
             
-            except IndexError:
-                return
+        elif len(c.entries) > 1:
+            form.bind = False
+            form.bind_fail_reason = _DUP_USERS_FOUND
+            return
+            
+        else:
+            entry = c.entries[0]
 
-            try:
-                email = entries[current_app.config['LDAPCLIENT_EMAIL_ATTRIBUTE']].values[0]
-                login_form.email = email
-            except LDAPKeyError:
-                # Email is required - but leave form.email = None, and
-                # pass a msg back to client via form.errors
-                return
+        if c.rebind(entry.entry_dn, form.password.data):
+            # User is authenticated
+            form.bind = True
+        else:
+            form.bind = False
+            form.bind_fail_reason = _USERNAME_PASSWD
+            return
+            
+        _check_access_permitted(form, c)
 
-            try:
-                full_name = entries[current_app.config['LDAPCLIENT_FULL_NAME_ATTRIBUTE']].values[0]
-                login_form.full_name = full_name
-            except LDAPKeyError:
-                # Doesn't matter, not required
-                pass
-
-    except LDAPBindError:    
-        login_form.bind = False
-
-
+        try:
+            email = entry[cv('email_attribute')]
+        except LDAPKeyError:
+            # Email is required - but leave form.email = None, and
+            # pass a msg back to client via form.errors
+            pass
+        else:
+            form.email = email
+                
     return
 
     

@@ -104,7 +104,7 @@ server, user, password, which are passed by the implementation
 See docs at https://ldap3.readthedocs.io/en/latest/connection.html
 """
 
-LDAPCLIENT_USER_SEARCH_BASE = 'dc=example,dc=com'
+LDAPCLIENT_USER_SEARCH_BASE = None
 """
 str
 
