@@ -45,8 +45,8 @@ class InvenioLDAPClient(object):
 
         state = _LDAPServers(server_kwargs = cv('server_kwargs', app),                            
                              server_pool_kwargs = cv('server_pool_kwargs', app))
-                             
-        if cv('exclusive_authentication'):
+        
+        if cv('exclusive_authentication', app):
             # Set invenio_accounts login-view config option
             # ... config, view-function, template ...what else? 
             app.config['SECURITY_CONFIRMABLE'] = False
@@ -55,6 +55,8 @@ class InvenioLDAPClient(object):
             app.config['SECURITY_CHANGEABLE'] = False
             app.config['USERPROFILES_EMAIL_ENABLED'] = False
             app.config['ACCOUNTS_LOGIN_VIEW_FUNCTION'] = login_via_ldap
+            app.config['ACCOUNTS_BASE_TEMPLATE'] = cv('base_template', app)
+            app.config['ACCOUNTS_COVER_TEMPLATE'] = cv('cover_template', app)
         else:
             raise NotImplementedError
             #blueprint = create_blueprint(app)

@@ -36,7 +36,9 @@ Set LDAP as the only authentication method, adjust user profile actions,
 remove ability to set custom user attributes. Auto-register user.
 """
 
-LDAPCLIENT_LOGIN_USER_TEMPLATE = 'invenio_ldapclient/login_user.html'
+LDAPCLIENT_BASE_TEMPLATE = 'invenio_accounts/base.html'
+LDAPCLIENT_COVER_TEMPLATE = 'invenio_accounts/base_cover.html'
+LDAPCLIENT_LOGIN_USER_TEMPLATE = 'security/ldap_login_user.html'
 """LDAP login template."""
 
 LDAPCLIENT_USERNAME_PLACEHOLDER = 'Username'
@@ -94,16 +96,6 @@ user account will be used.
 # LDAPCLIENT_ADMIN_PASSWORD = 'NOTIT'
 """Admin LDAP account password."""
 
-LDAPCLIENT_BIND_BASE = None
-"""
-Callable[[str],str]
-
-Takes login_form.username and returns str to pass as user argument in ldap3.Connection constructor
-
-E.g., 
-LDAPCLIENT_USERNAME_TO_DIRECTORY_USER = lambda username : f'uid={username},ou=People,dc=example,dc=com'
-"""
-
 LDAPCLIENT_CONNECTION_KWARGS = None
 """
 None or dict of remaining keyword args to pass to ldap3.Connection constructor after 
@@ -145,8 +137,7 @@ LDAPCLIENT_EMAIL_ATTRIBUTE = 'mail'
 LDAPCLIENT_FULL_NAME_ATTRIBUTE = 'displayName'
 """Full name LDAP attribute."""
 
-
-LDAPCLIENT_GROUP_SEARCH_BASE = 'ou=Groups,dc=example,dc=com'
+LDAPCLIENT_GROUP_SEARCH_BASE = None
 """
 str
 
@@ -164,6 +155,8 @@ member
 E.g.,
 LDAPCLIENT_GROUP_FILTERS = [lambda u : f'(&(memberUid={u})(objectClass=posixGroup)(cn=group1))',
                             lambda u : f'(&(memberUid={u})(objectClass=posixGroup)(cn=group2))']
+
+If None, disallow all
 """
 
 

@@ -72,8 +72,8 @@ def login_form_factory(app):
                 hash_password(self.password.data)
                 return False
 
-            if not self.group:
-                self.username.errors.append('User not in required group(s)')
+            if not self.access_permitted:
+                self.username.errors.append('User access not permitted')
                 return False
 
             if not self.email:
@@ -102,7 +102,7 @@ def validate_form_and_get_user(login_form):
     handling
     """
     login_form.bind = None
-    login_form.group = None
+    login_form.access_permitted = None
     login_form.email = None
     login_form.full_name = None
 

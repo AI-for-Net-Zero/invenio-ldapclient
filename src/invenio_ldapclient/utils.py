@@ -62,7 +62,8 @@ def ldap_connection(form):
     
     ldap_user = bind_base(form_user)
     servers = current_app.extensions['invenio-ldapclient'].servers
-    conn = Connection(servers, ldap_user, form_pass, **cv('connection_kwargs'))
+    conn_kwargs = cv('connection_kwargs') if cv('connection_kwargs') else {}
+    conn = Connection(servers, ldap_user, form_pass, **conn_kwargs)
 
     return conn
 
@@ -72,11 +73,14 @@ def check_group_memberships(form, connection):
     search_base = cv('group_search_base')
     group_filters = cv('group_filters')
 
-    group_member = ( connection.search(search_base, f(form.username.data), attributes=ALL_ATTRIBUTES)
+    if group_filters is None:
+        form.access_permitted = False
+        return
+    
+    group_member = ( connection.search(search_base, f(form.username.data) )
                      for f in group_filters )
 
-
-    form.group = any(group_member)
+    form.access_permitted = any(group_member)
     
 def ldap_search(connection, username):
     """Fetch the user entry from LDAP."""

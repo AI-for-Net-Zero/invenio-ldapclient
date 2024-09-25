@@ -31,8 +31,6 @@ def create_blueprint(app):
 
     return blueprint
 
-
-
 @anonymous_user_required
 def login_via_ldap():
     form = login_form_factory(current_app)()
@@ -45,6 +43,6 @@ def login_via_ldap():
 
     else:
         return render_template(
-            current_app.config['SECURITY_LOGIN_USER_TEMPLATE'],
+            cv('login_user_template'),
             login_user_form=form
         )    
