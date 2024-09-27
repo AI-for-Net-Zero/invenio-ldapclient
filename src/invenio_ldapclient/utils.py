@@ -53,7 +53,7 @@ def _check_access_permitted(form, connection):
     cv = config_value
     
     search_base = cv('group_search_base')
-    group_filters = cv('group_filters')
+    group_filters = cv('group_search_filters')
 
     if group_filters is None:
         form.access_permitted = False

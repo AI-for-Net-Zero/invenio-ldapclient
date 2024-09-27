@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 
 from werkzeug.local import LocalProxy
 from flask import current_app
@@ -6,6 +7,8 @@ from flask import current_app
 from invenio_accounts.models import User
 from invenio_db import db
 from .utils import config_value as cv
+
+from invenio_accounts import __version__ as __accounts__version__
 
 _security = LocalProxy(lambda: current_app.extensions['security'])
 _datastore = LocalProxy(lambda: _security.datastore)
@@ -16,7 +19,7 @@ def _commit(response=None):
 
 def update_user(user, form):
     username = form.username.data
-    email = form.email
+    email = form.email[0]
     full_name = form.full_name
 
     user.email = email # Email address needs to be in directory for login to succeed
@@ -40,24 +43,36 @@ def update_user(user, form):
         except:
             pass # Do something, e.g., write to log
 
-    db.session_add(user)
+    db.session.add(user)
     return
         
 
 def add_user(form):
     username = form.username.data
-    email = form.email
+    email = form.email[0]
     full_name = form.full_name
 
     kwargs = dict(username=username,
                   email=email,
-                  active=True,
-                  password=uuid.uuid4().hex)
+                  #active=True,
+                  password=uuid.uuid4().hex,
+                  #confirmed_at=datetime.utcnow(),
+                  #verified_at=datetime.utcnow()
+                  )
 
     _datastore.create_user(**kwargs)
-    
+    _datastore.commit()
+
     user = User.query.filter_by(username=username).one_or_none()
 
+    if int(__accounts__version__.split('.')[0]) >= 5:
+        _datastore.verify_user(user)
+    else:
+        _datastore.activate_user(user)
+        user.confirmed_at=datetime.utcnow()
+
+    
+    
     if full_name:
         try:
             with db.session.begin_nested():
@@ -65,8 +80,8 @@ def add_user(form):
                 db.session.add(user)
         except:
             pass # Do something, e.g., write to log
-        
-    db.session_add(user)
+
+    db.session.add(user)
     return user
 
 def find_or_register_user(form):

@@ -20,11 +20,13 @@ class _LDAPServers:
                  server_pool_kwargs = None):
         """ hosts is either tuple[str, int], tuple[str] or iterable of either of these
         server_kwargs is either dict or iter[dict] """
-
+        
+        
         if isinstance(server_kwargs, dict): 
             server = Server(**server_kwargs)
             server_pool = None
         else:
+            server_pool_kwargs = server_pool_kwargs or {}
             servers = [Server(**kws) for kws in server_kwargs]
             server_pool = ServerPool(servers, **server_pool_kwargs)
 
@@ -43,8 +45,13 @@ class InvenioLDAPClient(object):
         """Flask application initialization."""
         self.init_config(app)
 
-        state = _LDAPServers(server_kwargs = cv('server_kwargs', app),                            
-                             server_pool_kwargs = cv('server_pool_kwargs', app))
+        server_kwargs = cv('server_kwargs', app)
+        if server_kwargs:
+            state = _LDAPServers(server_kwargs = server_kwargs,                            
+                                 server_pool_kwargs = cv('server_pool_kwargs', app))
+
+        else:
+            state = None
         
         if cv('exclusive_authentication', app):
             # Set invenio_accounts login-view config option

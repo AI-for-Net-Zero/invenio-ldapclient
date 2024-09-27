@@ -114,6 +114,8 @@ Passed to ldap.Connection.search as search_base parameter when searching DIT for
 
 LDAPCLIENT_USER_SEARCH_FILTER = None
 """
+Must set this
+
 Callable[[str],str]
 
 Takes login_form.username and returns str to pass to

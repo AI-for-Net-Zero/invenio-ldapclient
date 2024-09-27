@@ -122,7 +122,7 @@ def validate_form_and_get_user(form):
         _check_access_permitted(form, c)
 
         try:
-            email = entry[cv('email_attribute')]
+            email = entry[cv('email_attribute')].values
         except LDAPKeyError:
             # Email is required - but leave form.email = None, and
             # pass a msg back to client via form.errors
