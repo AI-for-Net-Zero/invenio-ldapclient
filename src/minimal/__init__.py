@@ -59,8 +59,6 @@ def create_app():
                 instance_relative_config=True,
                 template_folder='templates')
 
-    assert app.instance_path == INSTANCE_PATH
-
     db_uri = 'sqlite:///' + os.path.join(app.instance_path, 'minimal.db')
 
     app.config.from_pyfile('config.py')
