@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Has containerised slapd instance been built?
+CONTAINER_NAME=`cat ldap_container_name`
 
 container_has_ipv4 ()
 {
@@ -9,7 +11,7 @@ container_has_ipv4 ()
 }
 
 # Start ldap container & get ip address
-CONTAINER_NAME=`cat ldap_container_name`
+
 
 lxc-unpriv-start -n ${CONTAINER_NAME} &> /dev/null
 

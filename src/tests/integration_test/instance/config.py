@@ -4,7 +4,7 @@ GROUP_FILTERS = [lambda u : f'(&(memberUid={u})(objectClass=posixGroup)(cn=green
 USER_FILTER = lambda u : f'(&(uid={u})(objectClass=posixAccount))'
 
 SECRET_KEY = 'secret'
-WTF_CSRF_ENABLED = False
+#WTF_CSRF_ENABLED = False
 EXPLAIN_TEMPLATE_LOADING = True
 
 LDAPCLIENT_SERVER_KWARGS = {'host': LDAP_SERVER_IP,
@@ -13,5 +13,11 @@ LDAPCLIENT_SERVER_KWARGS = {'host': LDAP_SERVER_IP,
                             }                      
 
 LDAPCLIENT_EXCLUSIVE_AUTHENTICATION = True
-LDAPCLIENT_BIND_BASE = lambda u : f'uid={u},ou=People,ou=Local,dc=example,dc=com'
+
+
+LDAPCLIENT_USER_SEARCH_BASE = 'dc=example,dc=com'
+LDAPCLIENT_USER_SEARCH_FILTER = lambda u : f'(&(uid={u})(objectclass=posixAccount))'
+
 LDAPCLIENT_GROUP_SEARCH_BASE = 'dc=example,dc=com'
+LDAPCLIENT_GROUP_SEARCH_FILTERS = \
+    [lambda u : f'(&(objectclass=posixGroup)(|(cn=green)(cn=blue))(memberUid={u}))']

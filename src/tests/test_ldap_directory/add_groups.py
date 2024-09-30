@@ -14,17 +14,35 @@ def add_groups(server, user, passwd, responses=None,
 
         bind_base = 'ou=Groups,ou=Local,dc=example,dc=com'
 
-        for i, cn in enumerate(groups):
-            dn = f'cn={cn},' + bind_base
-            conn.add(dn=dn,
-                     object_class='posixGroup',
-                     attributes={'gidNumber': i,
-                                 'memberUid': [f'user{uid}' for uid in range(n)]})
-            
-            if not unit_testing:
-                responses.append( (dn, conn.result) )
+        #(Almost) everyone's in green
+        dn = 'cn=green,' + bind_base
+        conn.add(dn=dn,
+                 object_class='posixGroup',
+                 attributes={'gidNumber': 0,
+                             'memberUid': [f'user{uid}' for uid in range(n-5)]})
+        
+        if not unit_testing:
+            responses.append( (dn, conn.result) )
 
-    
+
+        dn = 'cn=red,' + bind_base
+        conn.add(dn=dn,
+                 object_class='posixGroup',
+                 attributes={'gidNumber': 1,
+                             'memberUid': ['user3']})
+        
+        if not unit_testing:
+            responses.append( (dn, conn.result) )
+
+        
+        dn = 'cn=blue,' + bind_base
+        conn.add(dn=dn,
+                 object_class='posixGroup',
+                 attributes={'gidNumber': 2,
+                             'memberUid': ['User18', 'User19']})
+        
+        if not unit_testing:
+            responses.append( (dn, conn.result) )
 
     
 

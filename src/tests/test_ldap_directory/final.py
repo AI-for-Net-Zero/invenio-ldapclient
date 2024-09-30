@@ -27,7 +27,6 @@ def final(server, user, passwd,
         if not unit_testing:
             responses.append( (dn, conn.result) )
 
-
         #An external user has same uid as an internal one
         dn='uid=user2,ou=People,ou=External,dc=example,dc=com'
         conn.add(dn=dn,

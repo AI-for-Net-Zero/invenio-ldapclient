@@ -76,7 +76,7 @@ def configured_app(app):
                       LDAPCLIENT_USER_SEARCH_FILTER = user_filter,
                       LDAPCLIENT_CONNECTION_KWARGS = {'client_strategy': MOCK_SYNC},
                       LDAPCLIENT_GROUP_SEARCH_BASE = 'ou=Groups,ou=Local,o=Example,dc=example,dc=com',
-                      LDAPCLIENT_GROUP_FILTERS = group_filters,
+                      LDAPCLIENT_GROUP_SEARCH_FILTERS = group_filters,
                       LDAPCLIENT_FIND_BY_EMAIL = True,
                       SECURITY_LOGIN_USER_TEMPLATE = 'invenio_ldapclient/login_user.html'
                       )
@@ -354,7 +354,7 @@ def mock_login_form_factory_factory():
                  validate_on_submit = lambda:True):
 
         mock_form = Mock(username = Mock(data = username),
-                         email = email,
+                         email = [email],
                          full_name = full_name,
                          next = Mock(data = next),
                          validate_on_submit = validate_on_submit)
