@@ -126,7 +126,14 @@ def validate_form_and_get_user(form):
         except LDAPKeyError:
             # Email is required - but leave form.email = None, and
             # pass a msg back to client via form.errors
-            pass
+
+            #pass
+            # This is a TEMPORARY FIX
+            # By now we've succesfully rebound the connection with the
+            #  form.username as uid and user's password.
+            # No logic is being applied to determine whether user is Dept. Aeronautics
+            #  member, so constructed email address looks obviously made up
+            form.email = form.username.data + '@example.ac.uk'
         else:
             form.email = email
                 
