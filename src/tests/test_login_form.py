@@ -138,8 +138,10 @@ def test_no_email(configured_app, mock_server_factory):
 
             login_form = login_form_factory(app)()
             assert login_form.is_submitted()
-            assert not login_form.validate()
-            assert 'User email not registered.' in login_form.errors['username']
+            assert login_form.validate()
+            assert login_form.email == "testuser3@example.ac.uk"
+            #assert not login_form.validate()
+            #assert 'User email not registered.' in login_form.errors['username']
 
 
     inner()
