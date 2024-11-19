@@ -49,7 +49,7 @@ def update_user(user, form):
 
 def add_user(form):
     username = form.username.data
-    email = form.email[0]
+    email = form.email
     full_name = form.full_name
 
     kwargs = dict(username=username,
