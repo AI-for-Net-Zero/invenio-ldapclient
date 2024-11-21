@@ -54,7 +54,7 @@ readme = {file = "README.rst"}
 #AttributeError: invenio_ldapclient has no attribute __version__
 
 [tool.pytest.ini_options]
-testpaths = ["src/tests/"]
+testpaths = ["src/unittests/"]
 
 [tool.coverage.run]
 omit = ["src/invenio_ldapclient/django/*"]

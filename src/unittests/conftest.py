@@ -23,8 +23,7 @@ from invenio_accounts.profiles.dicts import UserProfileDict
 from ldap3 import Server, ServerPool, Connection, MOCK_SYNC, ROUND_ROBIN
 import ssl
 
-test_resource_path = str(importlib.resources.files('tests')/'resources')
-
+test_resource_path = str(importlib.resources.files('unittests')/'resources')
 
 
 @pytest.fixture()

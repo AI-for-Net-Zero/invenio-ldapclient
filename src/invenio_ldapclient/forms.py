@@ -3,7 +3,7 @@
 
 from __future__ import absolute_import, print_function
 
-from flask import Markup, request, current_app
+from flask import request, current_app
 from flask_security.forms import Form, NextFormMixin
 from flask_security.utils import url_for_security, hash_password
 from wtforms import PasswordField, StringField, SubmitField, validators
