@@ -47,8 +47,6 @@ LOGOUT_PAGE = """
 
 def create_app():
     INSTANCE_PATH = os.environ.get('INSTANCE_PATH')
-    print(INSTANCE_PATH)
-
     
     search_filter = lambda username : f'(&(uid={username})(objectClass=posixAccount))'
     group_filters = [lambda username : f'(&(memberUid={username})(cn=cats)(objectClass=posixGroup))',
@@ -58,10 +56,14 @@ def create_app():
                 instance_path=INSTANCE_PATH,
                 template_folder='templates')
 
+    try:
+        os.makedirs(app.instance_path)
+    except FileExistsError:
+        pass
+        
     db_uri = 'sqlite:///' + os.path.join(app.instance_path, 'minimal.db')
 
     app.config.from_pyfile('config.py')
-    assert app.config.get('SECRET_KEY', None) == 'secret'
 
     InvenioI18N(app)
     InvenioDB(app)
