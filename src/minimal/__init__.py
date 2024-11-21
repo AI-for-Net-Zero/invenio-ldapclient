@@ -40,7 +40,7 @@ LOGOUT_PAGE = """
 <body>
 <h1 style='color:blue'>Goodbye!</h1>
 <p>Come back soon</p>
-<input type="button" onclick="location.href='/logout';" value="Log back in" />
+<input type="button" onclick="location.href='/login';" value="Log back in" />
 </body>
 </html>
 """
@@ -56,7 +56,6 @@ def create_app():
 
     app = Flask('minimal',
                 instance_path=INSTANCE_PATH,
-                instance_relative_config=True,
                 template_folder='templates')
 
     db_uri = 'sqlite:///' + os.path.join(app.instance_path, 'minimal.db')
