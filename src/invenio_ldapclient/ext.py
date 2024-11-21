@@ -9,6 +9,8 @@
 
 from __future__ import absolute_import, print_function
 
+from flask import Blueprint
+
 from . import config
 from .views import create_blueprint, login_via_ldap
 from .utils import get_config, config_value as cv
@@ -70,6 +72,10 @@ class InvenioLDAPClient(object):
             #register_blueprint
         
         app.extensions['invenio-ldapclient'] = state
+        bp = Blueprint('invenio-ldapclient-ui',
+                       __name__,
+                       template_folder = 'templates')
+        app.register_blueprint(bp)
 
     def init_config(self, app):
         """Initialize configuration."""
