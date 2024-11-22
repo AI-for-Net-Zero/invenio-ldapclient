@@ -19,6 +19,7 @@ from invenio_ldapclient.forms import login_form_factory
 from invenio_ldapclient.utils import config_value as cv
 from invenio_ldapclient.db import find_or_register_user, add_user, update_user, _commit
 
+'''
 def create_blueprint(app):
     blueprint = Blueprint(
         'invenio_ldapclient',
@@ -30,6 +31,7 @@ def create_blueprint(app):
     blueprint.route('/ldap-login', methods=['GET', 'POST'])(login_via_ldap)
 
     return blueprint
+'''
 
 @anonymous_user_required
 def login_via_ldap():

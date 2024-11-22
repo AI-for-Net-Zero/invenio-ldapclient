@@ -1,5 +1,5 @@
 from invenio_accounts import InvenioAccountsUI
-from invenio_ldapclient import InvenioLDAPClient
+from invenio_ldapclient import InvenioLDAPClientUI
 from ldap3 import MOCK_SYNC
 
 import pytest
@@ -27,7 +27,7 @@ def test_raise_not_implemented(app):
                       )
 
     with pytest.raises(NotImplementedError):
-        InvenioLDAPClient(app)
+        InvenioLDAPClientUI(app)
 
     
 

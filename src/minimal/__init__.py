@@ -2,7 +2,7 @@ import os
 
 from flask import Flask
 from invenio_i18n import InvenioI18N
-from invenio_ldapclient import InvenioLDAPClient
+from invenio_ldapclient import InvenioLDAPClientUI
 from invenio_accounts import InvenioAccountsUI
 #from invenio_accounts.views import blueprint
 from invenio_assets import InvenioAssets
@@ -67,7 +67,7 @@ def create_app():
 
     InvenioI18N(app)
     InvenioDB(app)
-    InvenioLDAPClient(app)
+    InvenioLDAPClientUI(app)
     InvenioAccountsUI(app)
 
     @app.route('/')

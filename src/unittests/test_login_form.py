@@ -6,7 +6,7 @@ from invenio_accounts import InvenioAccountsUI
 from flask import request, current_app
 from ldap3 import MOCK_SYNC, Connection
 
-from invenio_ldapclient import InvenioLDAPClient
+from invenio_ldapclient import InvenioLDAPClientUI
 from invenio_ldapclient.forms import login_form_factory
 
 def test_bind(mock_server_factory):
@@ -23,7 +23,7 @@ def test_factory_returns_form_subclass(configured_app):
     from flask_security.forms import Form
     app = configured_app
 
-    InvenioLDAPClient(app)
+    InvenioLDAPClientUI(app)
     InvenioAccountsUI(app)
     
     LoginForm = login_form_factory(app)
@@ -36,7 +36,7 @@ def test_factory_returns_form_subclass(configured_app):
 
 def test_next(configured_app):
     app = configured_app
-    InvenioLDAPClient(app)
+    InvenioLDAPClientUI(app)
     InvenioAccountsUI(app)    
 
     def inner():
@@ -49,7 +49,7 @@ def test_next(configured_app):
 def test_no_username_or_password_or_form_not_submitted(configured_app):
     app = configured_app
     
-    InvenioLDAPClient(app)
+    InvenioLDAPClientUI(app)
     InvenioAccountsUI(app)
 
     with app.test_request_context(method = 'POST',
@@ -83,7 +83,7 @@ def test_username_password_invalid(configured_app, mock_server_factory):
     @patch('invenio_ldapclient.ext.Server', mockServerCls)
     def inner():
     
-        InvenioLDAPClient(app)
+        InvenioLDAPClientUI(app)
         InvenioAccountsUI(app)
         
         with app.test_request_context(method = 'POST',
@@ -105,7 +105,7 @@ def test_user_no_access_permissions(configured_app, mock_server_factory):
     @patch('invenio_ldapclient.ext.Server', mockServerCls)
     def inner():
 
-        InvenioLDAPClient(app)
+        InvenioLDAPClientUI(app)
         InvenioAccountsUI(app)
         
         with app.test_request_context(method = 'POST',
@@ -129,7 +129,7 @@ def test_no_email(configured_app, mock_server_factory):
     @patch('invenio_ldapclient.ext.Server', mockServerCls)
     def inner():
     
-        InvenioLDAPClient(app)
+        InvenioLDAPClientUI(app)
         InvenioAccountsUI(app)
         
         with app.test_request_context(method = 'POST',
@@ -152,7 +152,7 @@ def test_no_display_name(configured_app, mock_server_factory):
     @patch('invenio_ldapclient.ext.Server', mockServerCls)
     def inner():
     
-        InvenioLDAPClient(app)
+        InvenioLDAPClientUI(app)
         InvenioAccountsUI(app)
         
         with app.test_request_context(method = 'POST',
@@ -173,7 +173,7 @@ def test_dup_username(configured_app, mock_server_factory):
     @patch('invenio_ldapclient.ext.Server', mockServerCls)
     def inner():
     
-        InvenioLDAPClient(app)
+        InvenioLDAPClientUI(app)
         InvenioAccountsUI(app)
         
         with app.test_request_context(method = 'POST',
@@ -197,7 +197,7 @@ def test_no_access_permitted_at_all(very_strangely_configured_app,
     @patch('invenio_ldapclient.ext.Server', mockServerCls)
     def inner():
     
-        InvenioLDAPClient(app)
+        InvenioLDAPClientUI(app)
         InvenioAccountsUI(app)
         
         with app.test_request_context(method = 'POST',
@@ -222,7 +222,7 @@ def test_all_good(configured_app, mock_server_factory):
     @patch('invenio_ldapclient.ext.Server', mockServerCls)
     def inner():
     
-        InvenioLDAPClient(app)
+        InvenioLDAPClientUI(app)
         InvenioAccountsUI(app)
         
         with app.test_request_context(method = 'POST',
@@ -244,7 +244,7 @@ def test_not_under_search_base(strangely_configured_app, mock_server_factory):
     @patch('invenio_ldapclient.ext.Server', mockServerCls)
     def inner():
     
-        InvenioLDAPClient(app)
+        InvenioLDAPClientUI(app)
         InvenioAccountsUI(app)
         
         with app.test_request_context(method = 'POST',

@@ -5,7 +5,7 @@ anon_user_patch.start()
 
 from invenio_accounts import InvenioAccountsUI
 
-from invenio_ldapclient import InvenioLDAPClient
+from invenio_ldapclient import InvenioLDAPClientUI
 from invenio_db import InvenioDB
 
 from invenio_ldapclient.views import login_via_ldap
@@ -29,7 +29,7 @@ def test_login_existing_user_found_by_username(configured_app,
     mockUser = Mock(query = Mock(filter_by = _filter_by))
     
     InvenioDB(app)
-    InvenioLDAPClient(app)
+    InvenioLDAPClientUI(app)
     InvenioAccountsUI(app)
 
 

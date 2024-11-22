@@ -12,7 +12,8 @@ from __future__ import absolute_import, print_function
 from flask import Blueprint
 
 from . import config
-from .views import create_blueprint, login_via_ldap
+#from .views import create_blueprint, login_via_ldap
+from .views import login_via_ldap
 from .utils import get_config, config_value as cv
 from ldap3 import Server, ServerPool
 
@@ -35,7 +36,7 @@ class _LDAPServers:
         self.servers = server_pool if server_pool else server
             
 
-class InvenioLDAPClient(object):
+class InvenioLDAPClientUI(object):
     """Invenio-LDAPClient extension."""
 
     def __init__(self, app=None):
