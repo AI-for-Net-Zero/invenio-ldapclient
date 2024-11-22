@@ -8,7 +8,7 @@ from invenio_accounts import InvenioAccountsUI
 from invenio_ldapclient import InvenioLDAPClientUI
 from invenio_db import InvenioDB
 
-from invenio_ldapclient.views import login_via_ldap
+from invenio_ldapclient.views import login_ldap_ui
 
 
 def test_login_existing_user_found_by_username(configured_app,
@@ -40,7 +40,7 @@ def test_login_existing_user_found_by_username(configured_app,
     @patch('invenio_ldapclient.db.db')
     def inner(mock_db):
         with app.test_request_context():
-            response = login_via_ldap()
+            response = login_ldap_ui()
             assert mock_user.username == 'spongebob'
             assert mock_user.email == 'spongebob@example.com'
             assert mock_user.user_profile['full_name'] == 'Sponge Bob'

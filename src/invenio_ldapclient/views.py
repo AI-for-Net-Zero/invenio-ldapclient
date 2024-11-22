@@ -34,7 +34,7 @@ def create_blueprint(app):
 '''
 
 @anonymous_user_required
-def login_via_ldap():
+def login_ldap_ui():
     form = login_form_factory(current_app)()
 
     if form.validate_on_submit():

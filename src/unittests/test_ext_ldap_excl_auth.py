@@ -10,11 +10,11 @@ def test_login_view_fn(configured_app):
     assert 'security' in app.extensions
     assert 'ACCOUNTS_LOGIN_VIEW_FUNCTION' in app.config
 
-    from invenio_ldapclient.views import login_via_ldap
-    assert app.config['ACCOUNTS_LOGIN_VIEW_FUNCTION'] is login_via_ldap
+    from invenio_ldapclient.views import login_ldap_ui
+    assert app.config['ACCOUNTS_LOGIN_VIEW_FUNCTION'] is login_ldap_ui
     assert app.login_manager is app.extensions['security'].login_manager
     assert app.login_manager.login_view == 'security.login'
-    assert app.view_functions['security.login'] is login_via_ldap
+    assert app.view_functions['security.login'] is login_ldap_ui
 
 def test_security_config(configured_app):
     app = configured_app

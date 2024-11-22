@@ -13,7 +13,6 @@ from flask import Blueprint
 
 from . import config
 #from .views import create_blueprint, login_via_ldap
-from .views import login_via_ldap
 from .utils import get_config, config_value as cv
 from ldap3 import Server, ServerPool
 
@@ -46,6 +45,7 @@ class InvenioLDAPClientUI(object):
 
     def init_app(self, app):
         """Flask application initialization."""
+        from .views import login_ldap_ui
         self.init_config(app)
 
         server_kwargs = cv('server_kwargs', app)
@@ -64,7 +64,7 @@ class InvenioLDAPClientUI(object):
             app.config['SECURITY_REGISTERABLE'] = False
             app.config['SECURITY_CHANGEABLE'] = False
             app.config['USERPROFILES_EMAIL_ENABLED'] = False
-            app.config['ACCOUNTS_LOGIN_VIEW_FUNCTION'] = login_via_ldap
+            app.config['ACCOUNTS_LOGIN_VIEW_FUNCTION'] = login_ldap_ui
             app.config['ACCOUNTS_BASE_TEMPLATE'] = cv('base_template', app)
             app.config['ACCOUNTS_COVER_TEMPLATE'] = cv('cover_template', app)
         else:
