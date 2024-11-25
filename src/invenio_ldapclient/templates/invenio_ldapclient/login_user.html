@@ -6,9 +6,9 @@
   Invenio is free software; you can redistribute it and/or modify it
   under the terms of the MIT License; see LICENSE file for more details.
 #}
-{%- extends config.LDAPCLIENT_BASE_TEMPLATE %}
+{%- extends config.LDAPCLIENT_COVER_TEMPLATE %}
 
-{% from "invenio_accounts/_macros.html" import render_field, form_errors %}
+{% from "invenio_ldapclient/invenio_accounts/_macros.html" import render_field, form_errors %}
 
 {% block panel %}
 <div class="col-md-6 col-md-offset-3">

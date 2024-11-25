@@ -53,8 +53,7 @@ def create_app():
                      lambda username : f'(&(memberUid={username})(cn=dogs)(objectClass=posixGroup))']
 
     app = Flask('minimal',
-                instance_path=INSTANCE_PATH,
-                template_folder='templates')
+                instance_path=INSTANCE_PATH)
 
     try:
         os.makedirs(app.instance_path)

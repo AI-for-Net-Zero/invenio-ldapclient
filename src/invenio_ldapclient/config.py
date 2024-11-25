@@ -36,9 +36,9 @@ Set LDAP as the only authentication method, adjust user profile actions,
 remove ability to set custom user attributes. Auto-register user.
 """
 
-LDAPCLIENT_BASE_TEMPLATE = 'invenio_accounts/base.html'
-LDAPCLIENT_COVER_TEMPLATE = 'invenio_accounts/base_cover.html'
-LDAPCLIENT_LOGIN_USER_TEMPLATE = 'security/ldap_login_user.html'
+LDAPCLIENT_BASE_TEMPLATE = 'invenio_ldapclient/invenio_accounts/base.html'
+LDAPCLIENT_COVER_TEMPLATE = 'invenio_ldapclient/invenio_accounts/base_cover.html'
+LDAPCLIENT_LOGIN_USER_TEMPLATE = 'invenio_ldapclient/login_user.html'
 """LDAP login template."""
 
 LDAPCLIENT_USERNAME_PLACEHOLDER = 'Username'
