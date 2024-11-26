@@ -58,6 +58,7 @@ class LoginView(_LoginView):
 
     @use_kwargs(post_args)
     def post(self, **kwargs):
+        # dit.check_credentials(**kwargs)
         # 1. Replicate all steps in forms.validate_form_and_get_user
         # 2. Enable separate group check for REST access (load two configs, so no change reqd)
         # 3. User inv-acc's _abort and REST - figure out less painful way to test for v2-5

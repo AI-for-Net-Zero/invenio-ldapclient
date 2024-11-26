@@ -5,22 +5,13 @@ from __future__ import absolute_import, print_function
 
 from flask import request
 from flask_security.forms import Form, NextFormMixin
-from flask_security.utils import hash_password
 from wtforms import PasswordField, StringField, SubmitField, validators
 
 from .utils import (
-    _ldap_anon_connection,
-    _search_DIT,
-    _check_access_permitted,
     config_value as cv,
 )
 
-
-from ldap3.core.exceptions import LDAPKeyError
-
-_0_USERS_FOUND = "0_USERS_FOUND"
-_DUP_USERS_FOUND = "DUP_USERS_FOUND"
-_USERNAME_PASSWD = "USERNAME_PASSWD"
+from .dit import form_validator
 
 
 def login_form_factory(app):
@@ -47,85 +38,6 @@ def login_form_factory(app):
             if not super(LoginForm, self).validate(extra_validators=extra_validators):
                 return False
 
-            validate_form_and_get_user(self)
-
-            if not self.bind:
-                hash_password(self.password.data)
-
-                if self.bind_fail_reason == _DUP_USERS_FOUND:
-                    self.username.errors.append(
-                        "Login failed (duplicate username).  Contact administrator."
-                    )
-                    # LOG something
-                else:
-                    self.username.errors.append("Username and password not valid")
-
-                return False
-
-            elif not self.access_permitted:
-                self.username.errors.append(
-                    "Login failed (access permission).  Contact administrator."
-                )
-                return False
-
-            elif not self.email:
-                self.username.errors.append("User email not registered.")
-                return False
-
-            else:
-                return True
+            return form_validator(self)
 
     return LoginForm
-
-
-def validate_form_and_get_user(form):
-    """
-    Search DIT for username
-    Check bind username and password
-    Check access permitted
-    Check email in directory
-    """
-
-    form.bind = None
-    form.bind_fail_reason = None
-    form.access_permitted = None
-    form.email = None
-    form.full_name = None
-
-    with _ldap_anon_connection() as c:
-        _search_DIT(c, form.username.data)
-        # entries = c.entries
-
-        if len(c.entries) == 0:
-            form.bind = False
-            form.bind_fail_reason = _0_USERS_FOUND
-            return
-
-        elif len(c.entries) > 1:
-            form.bind = False
-            form.bind_fail_reason = _DUP_USERS_FOUND
-            return
-
-        else:
-            entry = c.entries[0]
-
-        if c.rebind(entry.entry_dn, form.password.data):
-            # User is authenticated
-            form.bind = True
-        else:
-            form.bind = False
-            form.bind_fail_reason = _USERNAME_PASSWD
-            return
-
-        _check_access_permitted(form, c)
-
-        try:
-            email = entry[cv("email_attribute")].values
-        except LDAPKeyError:
-            # Email is required - but leave form.email = None, and
-            # pass a msg back to client via form.errors
-            pass
-        else:
-            form.email = email
-
-    return
