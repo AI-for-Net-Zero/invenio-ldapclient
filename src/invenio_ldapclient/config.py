@@ -18,6 +18,7 @@ following configuration:
 
 Below is a list of all configuration variables:
 """
+
 LDAPCLIENT_AUTHENTICATION = True
 """Use LDAP as an authentication method without overriding the default."""
 
@@ -36,12 +37,12 @@ Set LDAP as the only authentication method, adjust user profile actions,
 remove ability to set custom user attributes. Auto-register user.
 """
 
-LDAPCLIENT_BASE_TEMPLATE = 'invenio_ldapclient/invenio_accounts/base.html'
-LDAPCLIENT_COVER_TEMPLATE = 'invenio_ldapclient/invenio_accounts/base_cover.html'
-LDAPCLIENT_LOGIN_USER_TEMPLATE = 'invenio_ldapclient/login_user.html'
+LDAPCLIENT_BASE_TEMPLATE = "invenio_ldapclient/invenio_accounts/base.html"
+LDAPCLIENT_COVER_TEMPLATE = "invenio_ldapclient/invenio_accounts/base_cover.html"
+LDAPCLIENT_LOGIN_USER_TEMPLATE = "invenio_ldapclient/login_user.html"
 """LDAP login template."""
 
-LDAPCLIENT_USERNAME_PLACEHOLDER = 'Username'
+LDAPCLIENT_USERNAME_PLACEHOLDER = "Username"
 """Placeholder for the login form username field."""
 
 LDAPCLIENT_SERVER_KWARGS = None
@@ -133,10 +134,10 @@ E.g.,
 LDAPCLIENT_USER_SEARCH_KWARGS = {attributes: ldap3.ALL_ATTRIBUTES}
 """
 
-LDAPCLIENT_EMAIL_ATTRIBUTE = 'mail'
+LDAPCLIENT_EMAIL_ATTRIBUTE = "mail"
 """Email LDAP attribute."""
 
-LDAPCLIENT_FULL_NAME_ATTRIBUTE = 'displayName'
+LDAPCLIENT_FULL_NAME_ATTRIBUTE = "displayName"
 """Full name LDAP attribute."""
 
 LDAPCLIENT_GROUP_SEARCH_BASE = None
@@ -161,7 +162,16 @@ LDAPCLIENT_GROUP_FILTERS = [lambda u : f'(&(memberUid={u})(objectClass=posixGrou
 If None, disallow all
 """
 
-
-
-
-
+ACCOUNTS_REST_AUTH_VIEWS = {
+    "login": "invenio_ldapclient.views.rest:LoginView",
+    "logout": "invenio_accounts.views.rest:LogoutView",
+    "user_info": "invenio_accounts.views.rest:UserInfoView",
+    "register": "invenio_accounts.views.rest:RegisterView",
+    "forgot_password": "invenio_accounts.views.rest:ForgotPasswordView",
+    "reset_password": "invenio_accounts.views.rest:ResetPasswordView",
+    "change_password": "invenio_accounts.views.rest:ChangePasswordView",
+    "send_confirmation": "invenio_accounts.views.rest:SendConfirmationEmailView",
+    "confirm_email": "invenio_accounts.views.rest:ConfirmEmailView",
+    "sessions_list": "invenio_accounts.views.rest:SessionsListView",
+    "sessions_item": "invenio_accounts.views.rest:SessionsItemView",
+}
