@@ -4,13 +4,12 @@ from flask import Flask
 from invenio_i18n import InvenioI18N
 from invenio_ldapclient import InvenioLDAPClientUI
 from invenio_accounts import InvenioAccountsUI
-#from invenio_accounts.views import blueprint
-from invenio_assets import InvenioAssets
+
+# from invenio_accounts.views import blueprint
 from invenio_db import InvenioDB
 from flask_login import login_required
 from flask_security.views import logout_user as logout_user
 
-from ldap3 import ALL_ATTRIBUTES
 
 ROOT_PAGE = """
 <!DOCTYPE html>
@@ -45,50 +44,43 @@ LOGOUT_PAGE = """
 </html>
 """
 
-def create_app():
-    INSTANCE_PATH = os.environ.get('INSTANCE_PATH')
-    
-    search_filter = lambda username : f'(&(uid={username})(objectClass=posixAccount))'
-    group_filters = [lambda username : f'(&(memberUid={username})(cn=cats)(objectClass=posixGroup))',
-                     lambda username : f'(&(memberUid={username})(cn=dogs)(objectClass=posixGroup))']
 
-    app = Flask('minimal',
-                instance_path=INSTANCE_PATH)
+def create_app():
+    INSTANCE_PATH = os.environ.get("INSTANCE_PATH")
+
+    app = Flask("minimal", instance_path=INSTANCE_PATH)
 
     try:
         os.makedirs(app.instance_path)
     except FileExistsError:
         pass
-        
-    db_uri = 'sqlite:///' + os.path.join(app.instance_path, 'minimal.db')
 
-    app.config.from_pyfile('config.py')
+
+    app.config.from_pyfile("config.py")
 
     InvenioI18N(app)
     InvenioDB(app)
     InvenioLDAPClientUI(app)
     InvenioAccountsUI(app)
 
-    @app.route('/')
+    @app.route("/")
     @login_required
     def root():
         return ROOT_PAGE
-    
-    @app.route('/welcome')
+
+    @app.route("/welcome")
     @login_required
     def welcome():
         return WELCOME_PAGE
 
-    @app.route('/logout')
+    @app.route("/logout")
     def logout():
         logout_user()
         return LOGOUT_PAGE
 
     return app
 
-
-
-    '''
+    """
     app.config.update(SECRET_KEY = 'secret',
                       WTF_CSRF_ENABLED = False,
                       ACCOUNTS_BASE_TEMPLATE = 'invenio_accounts/base.html',
@@ -115,4 +107,4 @@ def create_app():
                       #SECURITY_POST_LOGOUT_VIEW = 'invenio_ldapclient.ldap_login'
                       SQLALCHEMY_DATABASE_URI = db_uri
                     )
-    '''
+    """

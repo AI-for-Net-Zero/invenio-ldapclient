@@ -121,6 +121,9 @@ def form_validator(form):
     username = form.username.data
     password = form.password.data
 
+    form.email = None
+    form.full_name = None
+
     entry, bind_fail_reason = _get_entry_and_try_rebind(username, password)
 
     if not entry:
