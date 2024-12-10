@@ -18,6 +18,8 @@ import pytest
 from flask import Flask
 from flask_babel import Babel
 from invenio_i18n import InvenioI18N
+from invenio_ldapclient import InvenioLDAPClientUI
+from invenio_accounts import InvenioAccountsUI
 from invenio_accounts.profiles.dicts import UserProfileDict
 
 from ldap3 import Server, Connection, MOCK_SYNC, ROUND_ROBIN
@@ -82,6 +84,8 @@ def configured_app(app):
         LDAPCLIENT_FIND_BY_EMAIL=True,
         SECURITY_LOGIN_USER_TEMPLATE="invenio_ldapclient/login_user.html",
     )
+
+    
     return app
 
 
@@ -166,6 +170,10 @@ def configured_app_with_server_pool(app):
         LDAPCLIENT_GROUP_FILTERS=group_filters,
         LDAPCLIENT_FIND_BY_EMAIL=True,
     )
+
+    InvenioLDAPClientUI(app)
+    InvenioAccountsUI(app)
+
     return app
 
 

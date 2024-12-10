@@ -1,4 +1,4 @@
-from flask import current_app
+from flask import current_app, g
 import ldap3
 from flask_security.utils import hash_password
 
@@ -22,14 +22,13 @@ def _search_DIT(connection, username):
     search_base = cv("user_search_base")
     search_filter = cv("user_search_filter")
     search_kwargs = cv("user_search_kwargs") if cv("user_search_kwargs") else {}
-
+ 
     connection.search(
         search_base=search_base,
         search_filter=search_filter(username),
         attributes=ldap3.ALL_ATTRIBUTES,
         **search_kwargs,
     )
-
 
 def _get_entry_and_try_rebind(username, password):
     entry = None
@@ -63,60 +62,7 @@ def _is_access_permitted(username):
 
         return any(group_member)
 
-
-"""  
-def _check_user(username, password):
-   
-    #Search DIT for username
-    #Check bind username and password
-    #Check access permitted
-    #Check email in directory
-   
-    ret = {
-        "bind": None,
-        "bind_fail_reason": None,
-        "access_permitted": None,
-        "email": None,
-        "full_name": None}
-
-    with _ldap_anon_connection() as c:
-        _search_DIT(c, username)
-        # entries = c.entries
-
-        entry = None
-        if len(c.entries) == 0:
-            ret["bind"] = False
-            ret["bind_fail_reason"] = _0_USERS_FOUND
-
-        elif len(c.entries) > 1:
-            ret["bind"] = False
-            ret["bind_fail_reason"] = _DUP_USERS_FOUND
-
-        else:
-            entry = c.entries[0]
-            if entry and c.rebind(entry.entry_dn, password):
-                # User is authenticated
-                ret["bind"] = True
-            else:
-                ret["bind"] = False
-                ret["bind_fail_reason"] = _USERNAME_PASSWD
-
-        ret["access_permitted"] = _check_access_permitted(username, c)
-
-        if entry:
-            try:
-                email = entry[cv("email_attribute")].values
-            except ldap3.core.exceptions.LDAPKeyError:
-                # Email is required - but leave form.email = None, and
-                # pass a msg back to client via form.errors
-                pass
-            else:
-                ret["email"] = email
-
-    return ret
-"""
-
-
+'''
 def form_validator(form):
     username = form.username.data
     password = form.password.data
@@ -161,3 +107,56 @@ def form_validator(form):
         return False
 
     return True
+'''
+
+
+def check_dit_fetch_entries(request_object):
+    """
+    Initial validation (e.g., username & password required, CSRF tokens match)
+    has already been done now
+    """
+    username = request_object.get_username()
+    password = request_object.get_password()
+    
+    entry, bind_fail_reason = _get_entry_and_try_rebind(username, password)
+    
+    if bind_fail_reason:
+        if bind_fail_reason == _0_USERS_FOUND:
+            request_object.handle_no_users()
+
+        elif bind_fail_reason == _DUP_USERS_FOUND:
+            request_object.handle_dup_users()
+
+        elif bind_fail_reason == _USERNAME_PASSWD:
+            request_object.handle_passwd_invalid()
+
+        hash_password(password)
+        return None
+
+
+    mail_attrib = cv("email_attribute")
+    try:
+        email = entry.__getattribute__(mail_attrib)[0]        
+    except AttributeError:
+        # Email is required - but leave form.email = None, and
+        # pass a msg back to client via form.errors
+        request_object.handle_no_email()
+        return None
+    else:
+        request_object.set_email(email)
+
+    access_permitted = _is_access_permitted(username)
+
+    if not access_permitted:
+        request_object.handle_access_not_permitted()
+        return None
+
+    return entry
+
+
+
+    
+
+    
+    
+    

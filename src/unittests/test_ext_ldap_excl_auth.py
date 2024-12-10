@@ -1,12 +1,5 @@
-from invenio_accounts import InvenioAccountsUI
-from invenio_ldapclient import InvenioLDAPClientUI
-
-
 def test_login_view_fn(configured_app):
     app = configured_app
-
-    InvenioLDAPClientUI(app)
-    InvenioAccountsUI(app)
 
     assert "security" in app.extensions
     assert "ACCOUNTS_LOGIN_VIEW_FUNCTION" in app.config
@@ -22,9 +15,6 @@ def test_login_view_fn(configured_app):
 def test_security_config(configured_app):
     app = configured_app
 
-    InvenioLDAPClientUI(app)
-    InvenioAccountsUI(app)
-
     assert app.config["SECURITY_CONFIRMABLE"] is False
     assert app.config["SECURITY_RECOVERABLE"] is False
     assert app.config["SECURITY_REGISTERABLE"] is False
@@ -36,9 +26,6 @@ def test_server_pool(configured_app_with_server_pool):
     from ldap3 import ServerPool
 
     app = configured_app_with_server_pool
-
-    InvenioLDAPClientUI(app)
-    InvenioAccountsUI(app)
 
     assert type(app.extensions["invenio-ldapclient"].servers) is ServerPool
 

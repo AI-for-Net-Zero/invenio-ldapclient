@@ -78,8 +78,8 @@ def add_user(form):
     return user
 
 
-def find_or_register_user(form):
-    username = form.username.data
+def find_or_register_user(request_object):
+    username = request_object.get_username()
 
     # Search app db for user
     # 1. First, by username

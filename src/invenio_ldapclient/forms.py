@@ -11,8 +11,6 @@ from .utils import (
     config_value as cv,
 )
 
-from .dit import form_validator
-
 
 def login_form_factory(app):
     """Inserts e.g., current_app, into local namespace of form class"""
@@ -32,12 +30,39 @@ def login_form_factory(app):
                 self.next.data = request.args.get("next", "")
 
         def validate(self, extra_validators=None):
-            """
-            To do - this should not return before all validation steps have been taken.
-            """
-            if not super(LoginForm, self).validate(extra_validators=extra_validators):
-                return False
-
-            return form_validator(self)
+            return super(LoginForm, self).validate(extra_validators=extra_validators)
 
     return LoginForm
+
+
+class Form_Request_Obj(object):
+    def __init__(self, login_form):
+        self.login_form = login_form
+
+    def get_username(self):
+        return self.login_form.username.data
+
+    def get_password(self):
+        return self.login_form.password.data
+
+    def set_email(self, email):
+        self.email = email
+
+    def handle_no_users(self):
+        self.login_form.username.errors.append("Username and password not valid")
+
+    def handle_dup_users(self):
+        self.login_form.username.errors.append(
+            "Login failed (duplicate username).  Contact administrator."
+        )
+
+    def handle_passwd_invalid(self):
+        self.login_form.username.errors.append("Username and password not valid")
+
+    def handle_no_email(self):
+        self.login_form.username.errors.append("User email not registered.")
+
+    def handle_access_not_permitted(self):
+        self.login_form.username.errors.append(
+            "Login failed (access permission).  Contact administrator."
+        )
