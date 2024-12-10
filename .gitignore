@@ -70,3 +70,4 @@ target/
 **~
 
 src/tests/integration_test/instance/minimal.db
+/.rdm-venv/

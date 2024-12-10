@@ -1,0 +1,27 @@
+dn: dc=example,dc=com
+objectClass: top
+objectClass: dcObject
+objectClass: organization
+o: example.com
+dc: example
+
+dn: ou=Special,dc=example,dc=com
+objectClass: organizationalUnit
+
+dn: ou=Local,dc=example,dc=com
+objectClass: organizationalUnit
+
+dn: ou=External,dc=example,dc=com
+objectClass: organizationalUnit
+
+dn: ou=People,ou=Local,dc=example,dc=com
+objectClass: organizationalUnit
+
+dn: ou=Groups,ou=Local,dc=example,dc=com
+objectClass: organizationalUnit
+
+dn: ou=People,ou=External,dc=example,dc=com
+objectClass: organizationalUnit
+
+dn: ou=Groups,ou=External,dc=example,dc=com
+objectClass: organizationalUnit

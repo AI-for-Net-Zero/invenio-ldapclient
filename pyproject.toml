@@ -35,7 +35,8 @@ name = "Galter Health Sciences Library & Learning Center"
 email = "galter-is@listserv.it.northwestern.edu"
 
 [project.optional-dependencies]
-dev = ["pytest", "coverage", "sphinx", "pip-tools", "invenio-access"]
+dev = ["pytest", "coverage",
+       "sphinx", "pip-tools", "invenio-access", "ruff", "pylint"]
 
 [project.entry-points."invenio_base.apps"]
 invenio_ldapclient = "invenio_ldapclient:InvenioLDAPClient"
@@ -54,7 +55,7 @@ readme = {file = "README.rst"}
 #AttributeError: invenio_ldapclient has no attribute __version__
 
 [tool.pytest.ini_options]
-testpaths = ["src/tests/"]
+testpaths = ["src/unittests/"]
 
 [tool.coverage.run]
 omit = ["src/invenio_ldapclient/django/*"]

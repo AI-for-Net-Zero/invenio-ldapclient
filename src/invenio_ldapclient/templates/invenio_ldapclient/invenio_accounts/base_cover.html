@@ -6,12 +6,8 @@
   Invenio is free software; you can redistribute it and/or modify it
   under the terms of the MIT License; see LICENSE file for more details.
 #}
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-  </head>
-  <body>
-    {%- block page_body %}{%- endblock page_body %}
-  </body>
-</html>
+{%- extends config.LDAPCLIENT_BASE_TEMPLATE %}
+
+{%- block page_body %}
+{%- block panel %}{%- endblock panel %}
+{%- endblock page_body %}
