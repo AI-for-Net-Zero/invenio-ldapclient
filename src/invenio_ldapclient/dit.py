@@ -131,7 +131,7 @@ def check_dit_fetch_entries(request_object):
             request_object.handle_passwd_invalid()
 
         hash_password(password)
-        return None
+        return False
 
 
     mail_attrib = cv("email_attribute")
@@ -141,7 +141,7 @@ def check_dit_fetch_entries(request_object):
         # Email is required - but leave form.email = None, and
         # pass a msg back to client via form.errors
         request_object.handle_no_email()
-        return None
+        return False
     else:
         request_object.set_email(email)
 
@@ -149,9 +149,9 @@ def check_dit_fetch_entries(request_object):
 
     if not access_permitted:
         request_object.handle_access_not_permitted()
-        return None
+        return False
 
-    return entry
+    return True
 
 
 

@@ -26,7 +26,7 @@ def test_bind(mock_server_factory):
 
 def test_factory_returns_form_subclass(configured_app):
     from flask_security.forms import Form
-
+    
     app = configured_app
 
     LoginForm = login_form_factory(app)

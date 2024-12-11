@@ -85,6 +85,8 @@ def configured_app(app):
         SECURITY_LOGIN_USER_TEMPLATE="invenio_ldapclient/login_user.html",
     )
 
+    InvenioLDAPClientUI(app)
+    InvenioAccountsUI(app)
     
     return app
 
@@ -375,7 +377,7 @@ def mock_server_factory():
 
     return _factory
 
-
+'''
 @pytest.fixture()
 def mock_login_form_factory_factory():
     """
@@ -408,7 +410,7 @@ def mock_login_form_factory_factory():
         return mock_login_form_factory
 
     return _factory
-
+'''
 
 @pytest.fixture()
 def mock_user_factory():

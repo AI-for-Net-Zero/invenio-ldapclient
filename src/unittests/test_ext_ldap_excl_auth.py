@@ -1,3 +1,6 @@
+import pytest
+
+
 def test_login_view_fn(configured_app):
     app = configured_app
 

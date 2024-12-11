@@ -35,7 +35,7 @@ def test_bind_fail():
 
         mock_hash_password.assert_called_once()
         mock_hash_password.assert_called_with('password123')
-        assert ret is None
+        assert ret is False
         mock_request_object.handle_no_users.assert_called()
         mock_request_object.get_username.assert_called_once()
         mock_request_object.get_password.assert_called_once()
@@ -58,7 +58,7 @@ def test_bind_fail():
 
         mock_hash_password.assert_called_once()
         mock_hash_password.assert_called_with('password123')
-        assert ret is None
+        assert ret is False
         mock_request_object.handle_dup_users.assert_called()
         mock_request_object.get_username.assert_called_once()
         mock_request_object.get_password.assert_called_once()
@@ -81,7 +81,7 @@ def test_bind_fail():
 
         mock_hash_password.assert_called_once()
         mock_hash_password.assert_called_with('password123')
-        assert ret is None
+        assert ret is False
         mock_request_object.handle_passwd_invalid.assert_called()
         mock_request_object.get_username.assert_called_once()
         mock_request_object.get_password.assert_called_once()
@@ -108,7 +108,7 @@ def test_bind_succeed_no_email():
     @patch('invenio_ldapclient.dit.cv', mock_cv)
     def test_no_email():
         ret = check_dit_fetch_entries(mock_request_object)
-        assert ret == None
+        assert ret == False
 
         mock_request_object.handle_no_email.assert_called()
         assert not mock_request_object.handle_passwd_invalid.called
@@ -139,7 +139,7 @@ def test_bind_succeed_has_email_no_access():
     @patch('invenio_ldapclient.dit._is_access_permitted', mock__is_access_permitted)
     def inner():
         ret = check_dit_fetch_entries(mock_request_object)
-        assert ret == None
+        assert ret == False
 
         assert not mock_request_object.handle_no_email.called
         assert not mock_request_object.handle_passwd_invalid.called
@@ -171,7 +171,7 @@ def test_bind_succeed_has_email_has_access():
     @patch('invenio_ldapclient.dit._is_access_permitted', mock__is_access_permitted)
     def inner():
         ret = check_dit_fetch_entries(mock_request_object)
-        assert ret == mock_entry
+        assert ret == True
 
         assert not mock_request_object.handle_no_email.called
         assert not mock_request_object.handle_passwd_invalid.called
