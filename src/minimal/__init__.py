@@ -55,7 +55,6 @@ def create_app():
     except FileExistsError:
         pass
 
-
     app.config.from_pyfile("config.py")
 
     InvenioI18N(app)

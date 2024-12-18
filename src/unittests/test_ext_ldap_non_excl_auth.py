@@ -9,8 +9,12 @@ def test_raise_not_implemented(app):
         lambda u: f"(&(memberUid={u})(objectClass=posixGroup)(cn=green))",
         lambda u: f"(&(memberUid={u})(objectClass=posixGroup)(cn=blue))",
     ]
-    def user_filter(uid): return f"(&(uid={uid})(objectClass=posixAccount))"
-    def bind_base(uid): return f"uid={uid},ou=People,ou=Local,o=Example,dc=example,dc=com"
+
+    def user_filter(uid):
+        return f"(&(uid={uid})(objectClass=posixAccount))"
+
+    def bind_base(uid):
+        return f"uid={uid},ou=People,ou=Local,o=Example,dc=example,dc=com"
 
     app.config.update(
         WTF_CSRF_ENABLED=False,

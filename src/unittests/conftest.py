@@ -57,12 +57,14 @@ group_filters = [
 ]
 
 
-def user_filter(user): return f"(&(uid={user})(objectClass=posixAccount))"
+def user_filter(user):
+    return f"(&(uid={user})(objectClass=posixAccount))"
 
 
 @pytest.fixture()
 def configured_app(app):
-    def bind_base(uid): return f"uid={uid},ou=People,ou=Local,o=Example,dc=example,dc=com"
+    def bind_base(uid):
+        return f"uid={uid},ou=People,ou=Local,o=Example,dc=example,dc=com"
 
     app.config.update(
         WTF_CSRF_ENABLED=False,
@@ -87,7 +89,7 @@ def configured_app(app):
 
     InvenioLDAPClientUI(app)
     InvenioAccountsUI(app)
-    
+
     return app
 
 
@@ -96,7 +98,9 @@ def strangely_configured_app(app):
     """
     This is just to hit the if not connection.entries branch in .forms
     """
-    def bind_base(uid): return f"uid={uid},ou=People,o=Example,dc=example,dc=com"
+
+    def bind_base(uid):
+        return f"uid={uid},ou=People,o=Example,dc=example,dc=com"
 
     app.config.update(
         WTF_CSRF_ENABLED=False,
@@ -124,7 +128,9 @@ def very_strangely_configured_app(app):
     """
     This is just to hit the if not connection.entries branch in .forms
     """
-    def bind_base(uid): return f"uid={uid},ou=People,o=Example,dc=example,dc=com"
+
+    def bind_base(uid):
+        return f"uid={uid},ou=People,o=Example,dc=example,dc=com"
 
     app.config.update(
         WTF_CSRF_ENABLED=False,
@@ -149,7 +155,8 @@ def very_strangely_configured_app(app):
 
 @pytest.fixture()
 def configured_app_with_server_pool(app):
-    def bind_base(uid): return f"uid={uid},ou=People,ou=Local,o=Example,dc=example,dc=com"
+    def bind_base(uid):
+        return f"uid={uid},ou=People,ou=Local,o=Example,dc=example,dc=com"
 
     app.config.update(
         WTF_CSRF_ENABLED=False,
@@ -377,6 +384,7 @@ def mock_server_factory():
 
     return _factory
 
+
 '''
 @pytest.fixture()
 def mock_login_form_factory_factory():
@@ -411,6 +419,7 @@ def mock_login_form_factory_factory():
 
     return _factory
 '''
+
 
 @pytest.fixture()
 def mock_user_factory():

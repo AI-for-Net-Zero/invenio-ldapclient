@@ -43,6 +43,11 @@ class InvenioLDAPClient(object):
             self.init_app(app)
 
     def init_app(self, app):
+        self.init_config(app)
+
+        if not cv("exclusive_authentication", app):
+            raise NotImplementedError
+
         server_kwargs = cv("server_kwargs", app)
         if server_kwargs:
             state = _LDAPServers(
@@ -59,6 +64,11 @@ class InvenioLDAPClient(object):
         app.config["SECURITY_REGISTERABLE"] = False
         app.config["SECURITY_CHANGEABLE"] = False
         app.config["USERPROFILES_EMAIL_ENABLED"] = False
+
+    def init_config(self, app):
+        for k in dir(config):
+            if k.startswith("LDAPCLIENT_"):
+                app.config.setdefault(k, getattr(config, k))
 
 
 class InvenioLDAPClientUI(InvenioLDAPClient):
@@ -86,6 +96,9 @@ class InvenioLDAPClientUI(InvenioLDAPClient):
 
     def init_config(self, app):
         """Initialize configuration."""
+
+        super(InvenioLDAPClientUI, self).init_config(app)
+        
         if "COVER_TEMPLATE" in app.config:
             app.config.setdefault(
                 "LDAPCLIENT_BASE_TEMPLATE",
@@ -93,7 +106,7 @@ class InvenioLDAPClientUI(InvenioLDAPClient):
             )
 
         for k in dir(config):
-            if k.startswith("LDAPCLIENT_"):
+            if k.startswith("LDAPCLIENTUI_"):
                 app.config.setdefault(k, getattr(config, k))
 
 
@@ -105,17 +118,11 @@ class InvenioLDAPClientREST(InvenioLDAPClient):
 
         super(InvenioLDAPClientREST, self).init_app(app)
 
-        if not cv("exclusive_authentication", app):
-            raise NotImplementedError
-
+        
     def init_config(self, app):
         """Initialize configuration."""
-        if "COVER_TEMPLATE" in app.config:
-            app.config.setdefault(
-                "LDAPCLIENT_BASE_TEMPLATE",
-                app.config["COVER_TEMPLATE"],
-            )
-
+        super(InvenioLDAPClientREST, self).init_config(app)
+        
         for k in dir(config):
-            if any([k.startswith(pref) for pref in ["LDAPCLIENT_", "ACCOUNTS_"]]):
+            if k.startswith("LDAPCLIENTREST_"):
                 app.config.setdefault(k, getattr(config, k))

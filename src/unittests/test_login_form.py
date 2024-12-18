@@ -11,6 +11,7 @@ from invenio_ldapclient.dit import check_dit_fetch_entries
 from invenio_ldapclient import InvenioLDAPClientUI
 from invenio_accounts import InvenioAccountsUI
 
+
 @pytest.mark.skip()
 def test_bind(mock_server_factory):
     server = mock_server_factory("ldap.mock")
@@ -26,7 +27,7 @@ def test_bind(mock_server_factory):
 
 def test_factory_returns_form_subclass(configured_app):
     from flask_security.forms import Form
-    
+
     app = configured_app
 
     LoginForm = login_form_factory(app)
@@ -69,6 +70,7 @@ def test_no_username_or_password_or_form_not_submitted(configured_app):
         assert not login_form.validate()
         assert not login_form.is_submitted()
 
+
 @pytest.mark.skip()
 def test_username_password_invalid(configured_app, mock_server_factory):
     app = configured_app
@@ -77,7 +79,6 @@ def test_username_password_invalid(configured_app, mock_server_factory):
 
     InvenioLDAPClientUI(app)
     InvenioAccountsUI(app)
-
 
     @patch("invenio_ldapclient.ext.Server", mockServerCls)
     def inner():
@@ -90,9 +91,10 @@ def test_username_password_invalid(configured_app, mock_server_factory):
             entry = check_dit_fetch_entries(Form_Request_Obj(login_form))
             assert entry is None
             assert "Username and password not valid" in login_form.username.errors
-            
+
     inner()
-    
+
+
 @pytest.mark.skip()
 def test_user_no_access_permissions(configured_app, mock_server_factory):
     app = configured_app
@@ -113,12 +115,14 @@ def test_user_no_access_permissions(configured_app, mock_server_factory):
             assert login_form.validate()
             entry = check_dit_fetch_entries(Form_Request_Obj(login_form))
             assert entry is None
-            
-            assert "Login failed (access permission).  Contact administrator." \
+
+            assert (
+                "Login failed (access permission).  Contact administrator."
                 in login_form.username.errors
-            
+            )
 
     inner()
+
 
 @pytest.mark.skip()
 def test_no_email(configured_app, mock_server_factory):
@@ -141,6 +145,7 @@ def test_no_email(configured_app, mock_server_factory):
 
     inner()
 
+
 @pytest.mark.skip()
 def test_no_display_name(configured_app, mock_server_factory):
     app = configured_app
@@ -157,6 +162,7 @@ def test_no_display_name(configured_app, mock_server_factory):
             assert login_form.validate()
 
     inner()
+
 
 @pytest.mark.skip()
 def test_dup_username(configured_app, mock_server_factory):
@@ -181,6 +187,7 @@ def test_dup_username(configured_app, mock_server_factory):
 
     inner()
 
+
 @pytest.mark.skip()
 def test_no_access_permitted_at_all(very_strangely_configured_app, mock_server_factory):
     app = very_strangely_configured_app
@@ -204,6 +211,7 @@ def test_no_access_permitted_at_all(very_strangely_configured_app, mock_server_f
 
     inner()
 
+
 @pytest.mark.skip()
 def test_all_good(configured_app, mock_server_factory):
     app = configured_app
@@ -220,6 +228,7 @@ def test_all_good(configured_app, mock_server_factory):
             assert login_form.validate()
 
     inner()
+
 
 @pytest.mark.skip()
 def test_not_under_search_base(strangely_configured_app, mock_server_factory):

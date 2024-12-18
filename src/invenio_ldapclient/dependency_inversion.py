@@ -1,4 +1,4 @@
-#https://stackoverflow.com/questions/61358683/dependency-inversion-in-python
+# https://stackoverflow.com/questions/61358683/dependency-inversion-in-python
 
 """
 UI:

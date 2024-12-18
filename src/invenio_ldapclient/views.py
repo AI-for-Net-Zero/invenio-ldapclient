@@ -19,7 +19,7 @@ from .dit import check_dit_fetch_entries
 @anonymous_user_required
 def login_ldap_ui():
     form = login_form_factory(current_app)()
-    
+
     if form.validate_on_submit():
         entry = check_dit_fetch_entries(Form_Request_Obj(form))
         if entry:
@@ -28,9 +28,6 @@ def login_ldap_ui():
             after_this_request(_commit)  # Calls db.session.commit()
             return redirect(get_post_login_redirect(form.next.data))
         else:
-            return render_template(cv("login_user_template"), login_user_form = form)
+            return render_template(cv("login_user_template"), login_user_form=form)
     else:
-        return render_template(cv("login_user_template"), login_user_form = form)
-
-
-
+        return render_template(cv("login_user_template"), login_user_form=form)

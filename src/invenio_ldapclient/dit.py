@@ -22,13 +22,14 @@ def _search_DIT(connection, username):
     search_base = cv("user_search_base")
     search_filter = cv("user_search_filter")
     search_kwargs = cv("user_search_kwargs") if cv("user_search_kwargs") else {}
- 
+
     connection.search(
         search_base=search_base,
         search_filter=search_filter(username),
         attributes=ldap3.ALL_ATTRIBUTES,
         **search_kwargs,
     )
+
 
 def _get_entry_and_try_rebind(username, password):
     entry = None
@@ -62,7 +63,8 @@ def _is_access_permitted(username):
 
         return any(group_member)
 
-'''
+
+"""
 def form_validator(form):
     username = form.username.data
     password = form.password.data
@@ -107,7 +109,7 @@ def form_validator(form):
         return False
 
     return True
-'''
+"""
 
 
 def check_dit_fetch_entries(request_object):
@@ -117,9 +119,9 @@ def check_dit_fetch_entries(request_object):
     """
     username = request_object.get_username()
     password = request_object.get_password()
-    
+
     entry, bind_fail_reason = _get_entry_and_try_rebind(username, password)
-    
+
     if bind_fail_reason:
         if bind_fail_reason == _0_USERS_FOUND:
             request_object.handle_no_users()
@@ -133,10 +135,9 @@ def check_dit_fetch_entries(request_object):
         hash_password(password)
         return False
 
-
     mail_attrib = cv("email_attribute")
     try:
-        email = entry.__getattribute__(mail_attrib)[0]        
+        email = entry.__getattribute__(mail_attrib)[0]
     except AttributeError:
         # Email is required - but leave form.email = None, and
         # pass a msg back to client via form.errors
@@ -152,11 +153,3 @@ def check_dit_fetch_entries(request_object):
         return False
 
     return True
-
-
-
-    
-
-    
-    
-    

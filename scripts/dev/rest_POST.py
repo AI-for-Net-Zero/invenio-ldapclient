@@ -7,18 +7,17 @@ from invenio_accounts import InvenioAccountsREST
 from invenio_accounts.views.rest import create_blueprint
 
 
-instance_path = tempfile.mkdtemp(prefix='invenio_ldapclient')
+instance_path = tempfile.mkdtemp(prefix="invenio_ldapclient")
 
-app = Flask('testapp', instance_path=instance_path)
+app = Flask("testapp", instance_path=instance_path)
 app.config.update(
-    SECRET_KEY='SECRET_KEY',
+    SECRET_KEY="SECRET_KEY",
     TESTING=True,
 )
 
 
-
 app.config.update(
-    ACCOUNTS_REST_AUTH_VIEWS = {
+    ACCOUNTS_REST_AUTH_VIEWS={
         "login": "invenio_ldapclient.views_rest:LoginView",
         "logout": "invenio_accounts.views.rest:LogoutView",
         "user_info": "invenio_accounts.views.rest:UserInfoView",
@@ -31,23 +30,21 @@ app.config.update(
         "sessions_list": "invenio_accounts.views.rest:SessionsListView",
         "sessions_item": "invenio_accounts.views.rest:SessionsItemView",
     },
-    
-    SECURITY_CONFIRMABLE = False,
-    SECURITY_REGISTERABLE = False,
-    SECURITY_CHANGEABLE = False,
-    SECURITY_RECOVERABLE = False,
-    
-    LDAPCLIENT_USERNAME_PLACEHOLDER = 'Username'
+    SECURITY_CONFIRMABLE=False,
+    SECURITY_REGISTERABLE=False,
+    SECURITY_CHANGEABLE=False,
+    SECURITY_RECOVERABLE=False,
+    LDAPCLIENT_USERNAME_PLACEHOLDER="Username",
 )
 
-#Babel(app)
+# Babel(app)
 InvenioAccountsREST(app)
 bp = create_blueprint(app)
-app.register_blueprint(bp, url_prefix = '/api')
+app.register_blueprint(bp, url_prefix="/api")
 
 client = app.test_client()
 
-response = client.post('api/login')
-assert b'hello' in response.get_data()   
-    
+response = client.post("api/login")
+assert b"hello" in response.get_data()
+
 shutil.rmtree(instance_path)
