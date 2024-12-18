@@ -94,11 +94,6 @@ def find_or_register_user(request_object):
     #
     # Therefore, for the time being, search app db by email is superfluous.
     # --->
-
-    # 2. Then by email, if this wasn't successful (and we allow it in config)
-    # if not user and cv('find_by_email'):
-    #    user = User.query.filter_by(email=email).one_or_none()
-
     if user:
         # We found the user - update their profile info with stuff from directory
         update_user(user, form)

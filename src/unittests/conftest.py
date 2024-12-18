@@ -18,8 +18,8 @@ import pytest
 from flask import Flask
 from flask_babel import Babel
 from invenio_i18n import InvenioI18N
-from invenio_ldapclient import InvenioLDAPClientUI
-from invenio_accounts import InvenioAccountsUI
+from invenio_ldapclient import InvenioLDAPClientUI, InvenioLDAPClientREST
+from invenio_accounts import InvenioAccountsUI, InvenioAccountsREST
 from invenio_accounts.profiles.dicts import UserProfileDict
 
 from ldap3 import Server, Connection, MOCK_SYNC, ROUND_ROBIN
@@ -67,7 +67,6 @@ def configured_app(app):
         return f"uid={uid},ou=People,ou=Local,o=Example,dc=example,dc=com"
 
     app.config.update(
-        WTF_CSRF_ENABLED=False,
         COVER_TEMPLATE="some/template.html",
         LDAPCLIENT_EXCLUSIVE_AUTHENTICATION=True,
         LDAPCLIENT_SERVER_KWARGS={
@@ -87,12 +86,29 @@ def configured_app(app):
         SECURITY_LOGIN_USER_TEMPLATE="invenio_ldapclient/login_user.html",
     )
 
+    return app
+
+@pytest.fixture()
+def initialised_UI_app(configured_app):
+    app = configured_app
+    
     InvenioLDAPClientUI(app)
     InvenioAccountsUI(app)
 
     return app
 
+@pytest.fixture()
+def initialised_REST_app(configured_app):
+    del configured_app.config["SECURITY_LOGIN_USER_TEMPLATE"]
+    app = configured_app
+    
+    InvenioLDAPClientREST(app)
+    InvenioAccountsREST(app)
 
+    return app
+
+
+'''
 @pytest.fixture()
 def strangely_configured_app(app):
     """
@@ -121,8 +137,8 @@ def strangely_configured_app(app):
         LDAPCLIENT_FIND_BY_EMAIL=True,
     )
     return app
-
-
+'''
+'''
 @pytest.fixture()
 def very_strangely_configured_app(app):
     """
@@ -151,7 +167,7 @@ def very_strangely_configured_app(app):
         LDAPCLIENT_FIND_BY_EMAIL=True,
     )
     return app
-
+'''
 
 @pytest.fixture()
 def configured_app_with_server_pool(app):

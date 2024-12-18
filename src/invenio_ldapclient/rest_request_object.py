@@ -2,9 +2,6 @@ class Kwarg_Request_Obj(object):
     def __init__(self, kwargs):
         self.kwargs = kwargs
 
-    def __getitem__(self, name):
-        return self.kwargs[name]
-
     def get_username(self):
         return self.kwargs["username"]
 

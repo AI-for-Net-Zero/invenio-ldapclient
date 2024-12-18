@@ -46,7 +46,7 @@ class InvenioLDAPClient(object):
         self.init_config(app)
 
         if not cv("exclusive_authentication", app):
-            raise NotImplementedError
+            raise NotImplementedError("LDAP must be sole auth mechanism")
 
         server_kwargs = cv("server_kwargs", app)
         if server_kwargs:
@@ -55,7 +55,7 @@ class InvenioLDAPClient(object):
                 server_pool_kwargs=cv("server_pool_kwargs", app),
             )
         else:
-            state = None
+            raise RuntimeError("invenio-ldapclient: LDAP server info not provided")
 
         app.extensions["invenio-ldapclient"] = state
 
@@ -75,54 +75,49 @@ class InvenioLDAPClientUI(InvenioLDAPClient):
     def init_app(self, app):
         """Flask application initialization."""
         from .views import login_ldap_ui
-
-        self.init_config(app)
-
         super(InvenioLDAPClientUI, self).init_app(app)
 
-        if cv("exclusive_authentication", app):
-            # Set invenio_accounts login-view config option
-            # ... config, view-function, template ...what else?
-            app.config["ACCOUNTS_LOGIN_VIEW_FUNCTION"] = login_ldap_ui
-            app.config["ACCOUNTS_BASE_TEMPLATE"] = cv("base_template", app)
-            app.config["ACCOUNTS_COVER_TEMPLATE"] = cv("cover_template", app)
-        else:
-            raise NotImplementedError
-            # blueprint = create_blueprint(app)
-            # register_blueprint
+        # Set invenio_accounts login-view config option
+        # ... config, view-function, template ...what else?
+        app.config["ACCOUNTS_LOGIN_VIEW_FUNCTION"] = login_ldap_ui
+        app.config["ACCOUNTS_BASE_TEMPLATE"] = cv("base_template", app)
+        app.config["ACCOUNTS_COVER_TEMPLATE"] = cv("cover_template", app)
 
+        # Registering blueprint to add templates to search path
         bp = Blueprint("invenio-ldapclient-ui", __name__, template_folder="templates")
         app.register_blueprint(bp)
 
     def init_config(self, app):
         """Initialize configuration."""
-
         super(InvenioLDAPClientUI, self).init_config(app)
         
         if "COVER_TEMPLATE" in app.config:
             app.config.setdefault(
                 "LDAPCLIENT_BASE_TEMPLATE",
                 app.config["COVER_TEMPLATE"],
-            )
-
-        for k in dir(config):
-            if k.startswith("LDAPCLIENTUI_"):
-                app.config.setdefault(k, getattr(config, k))
-
+            )        
 
 class InvenioLDAPClientREST(InvenioLDAPClient):
     def init_app(self, app):
         """Flask application initialization."""
 
-        self.init_config(app)
-
         super(InvenioLDAPClientREST, self).init_app(app)
 
+        #stop InvenioAccounts.init_app adding "security.login" to app.view_functions
+        app.config["ACCOUNTS_LOGIN_VIEW_FUNCTION"] = None
         
-    def init_config(self, app):
-        """Initialize configuration."""
-        super(InvenioLDAPClientREST, self).init_config(app)
-        
-        for k in dir(config):
-            if k.startswith("LDAPCLIENTREST_"):
-                app.config.setdefault(k, getattr(config, k))
+        app.config["ACCOUNTS_REST_AUTH_VIEWS"] = {
+            "login": "invenio_ldapclient.views_rest:LoginView",
+            "logout": "invenio_accounts.views.rest:LogoutView",
+            "user_info": "invenio_accounts.views.rest:UserInfoView",
+            "register": "invenio_accounts.views.rest:RegisterView",
+            "forgot_password": "invenio_accounts.views.rest:ForgotPasswordView",
+            "reset_password": "invenio_accounts.views.rest:ResetPasswordView",
+            "change_password": "invenio_accounts.views.rest:ChangePasswordView",
+            "send_confirmation": "invenio_accounts.views.rest:SendConfirmationEmailView",
+            "confirm_email": "invenio_accounts.views.rest:ConfirmEmailView",
+            "sessions_list": "invenio_accounts.views.rest:SessionsListView",
+            "sessions_item": "invenio_accounts.views.rest:SessionsItemView",
+        }
+
+

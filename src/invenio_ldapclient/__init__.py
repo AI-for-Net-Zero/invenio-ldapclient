@@ -9,7 +9,7 @@
 
 from __future__ import absolute_import, print_function
 
-from .ext import InvenioLDAPClientUI
+from .ext import InvenioLDAPClient, InvenioLDAPClientUI, InvenioLDAPClientREST
 
 # from .version import __version__
 __version__ = "1.0.0"

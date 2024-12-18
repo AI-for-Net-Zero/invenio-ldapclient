@@ -25,10 +25,10 @@ def test_bind(mock_server_factory):
     assert conn.bind()
 
 
-def test_factory_returns_form_subclass(configured_app):
+def test_factory_returns_form_subclass(configured_UI_app):
     from flask_security.forms import Form
 
-    app = configured_app
+    app = configured_UI_app
 
     LoginForm = login_form_factory(app)
     assert hasattr(LoginForm, "username")
@@ -38,8 +38,8 @@ def test_factory_returns_form_subclass(configured_app):
     assert issubclass(LoginForm, Form)
 
 
-def test_next(configured_app):
-    app = configured_app
+def test_next(configured_UI_app):
+    app = configured_UI_app
 
     def inner():
         login_form = login_form_factory(app)()
