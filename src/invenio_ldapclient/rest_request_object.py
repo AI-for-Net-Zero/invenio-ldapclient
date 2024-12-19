@@ -11,6 +11,9 @@ class Kwarg_Request_Obj(object):
     def set_email(self, email):
         self.kwargs["email"] = email
 
+    def get_email(self):
+        return self.kwargs.get("email", None)
+
     def handle_no_users(self):
         self.kwargs["abort_msg"] = "No users REST msg"
         self.kwargs["abort_field"] = "username"

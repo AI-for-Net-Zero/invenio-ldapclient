@@ -63,55 +63,7 @@ def _is_access_permitted(username):
 
         return any(group_member)
 
-
-"""
-def form_validator(form):
-    username = form.username.data
-    password = form.password.data
-
-    form.email = None
-    form.full_name = None
-
-    entry, bind_fail_reason = _get_entry_and_try_rebind(username, password)
-
-    if not entry:
-        hash_password(form.password.data)
-
-        if bind_fail_reason in [_0_USERS_FOUND, _USERNAME_PASSWD]:
-            form.username.errors.append("Username and password not valid")
-            return False
-
-        elif bind_fail_reason is _DUP_USERS_FOUND:
-            form.username.errors.append(
-                "Login failed (duplicate username).  Contact administrator."
-            )
-            return False
-
-        else:
-            return False
-
-    try:
-        email = entry[cv("email_attribute")].values
-    except ldap3.core.exceptions.LDAPKeyError:
-        # Email is required - but leave form.email = None, and
-        # pass a msg back to client via form.errors
-        form.username.errors.append("User email not registered.")
-        return False
-    else:
-        form.email = email
-
-    access_permitted = _is_access_permitted(username)
-
-    if not access_permitted:
-        form.username.errors.append(
-            "Login failed (access permission).  Contact administrator."
-        )
-        return False
-
-    return True
-"""
-
-
+    
 def check_dit_fetch_entries(request_object):
     """
     Initial validation (e.g., username & password required, CSRF tokens match)

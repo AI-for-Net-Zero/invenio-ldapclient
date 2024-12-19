@@ -5,8 +5,12 @@ from invenio_accounts.views.rest import (_abort,
                                          use_kwargs,
                                          LoginView as _LoginView)
 
+from flask_security import login_user
+from flask import after_this_request
+
 from .rest_request_object import Kwarg_Request_Obj
 from .dit import check_dit_fetch_entries
+from .db import find_or_register_user
 
 
 class LoginView(_LoginView):
@@ -34,7 +38,7 @@ class LoginView(_LoginView):
             user = find_or_register_user(request_obj)
             login_user(user)
             after_this_request(_commit)
-            return self.success_response(None)
+            return self.success_response(user)
         
         else:
             raise RuntimeError("Fell through invenio_ldapclient.LoginView.post")

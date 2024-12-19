@@ -45,6 +45,12 @@ class Form_Request_Obj(object):
     def get_password(self):
         return self.login_form.password.data
 
+    def get_email(self):
+        if hasattr(self, "email"):
+            return self.email
+        else:
+            return None
+
     def set_email(self, email):
         self.email = email
 

@@ -18,10 +18,7 @@ def _commit(response=None):
     return response
 
 
-def update_user(user, form):
-    email = form.email[0]
-    full_name = form.full_name
-
+def update_user(user, username, email, full_name=None):
     user.email = email  # Email address needs to be in directory for login to succeed
 
     """
@@ -44,11 +41,7 @@ def update_user(user, form):
     return
 
 
-def add_user(form):
-    username = form.username.data
-    email = form.email
-    full_name = form.full_name
-
+def add_user(username, email, full_name=None):
     kwargs = dict(
         username=username,
         email=email,
@@ -80,6 +73,7 @@ def add_user(form):
 
 def find_or_register_user(request_object):
     username = request_object.get_username()
+    email = request_object.get_email()
 
     # Search app db for user
     # 1. First, by username
@@ -96,10 +90,10 @@ def find_or_register_user(request_object):
     # --->
     if user:
         # We found the user - update their profile info with stuff from directory
-        update_user(user, form)
+        update_user(user, username, email)
         return user
 
     else:
         # We didn't find the user - create an entry in the app db with a dummy passwd
-        user = add_user(form)
+        user = add_user(username, email)
         return user
