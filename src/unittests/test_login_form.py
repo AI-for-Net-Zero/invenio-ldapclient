@@ -11,8 +11,6 @@ from invenio_ldapclient.dit import check_dit_fetch_entries
 from invenio_ldapclient import InvenioLDAPClientUI
 from invenio_accounts import InvenioAccountsUI
 
-
-@pytest.mark.skip()
 def test_bind(mock_server_factory):
     server = mock_server_factory("ldap.mock")
     conn = Connection(
@@ -25,10 +23,10 @@ def test_bind(mock_server_factory):
     assert conn.bind()
 
 
-def test_factory_returns_form_subclass(configured_UI_app):
+def test_factory_returns_form_subclass(initialised_UI_app):
     from flask_security.forms import Form
 
-    app = configured_UI_app
+    app = initialised_UI_app
 
     LoginForm = login_form_factory(app)
     assert hasattr(LoginForm, "username")
@@ -38,8 +36,8 @@ def test_factory_returns_form_subclass(configured_UI_app):
     assert issubclass(LoginForm, Form)
 
 
-def test_next(configured_UI_app):
-    app = configured_UI_app
+def test_next(initialised_UI_app):
+    app = initialised_UI_app
 
     def inner():
         login_form = login_form_factory(app)()
@@ -49,7 +47,6 @@ def test_next(configured_UI_app):
         inner()
 
 
-@pytest.mark.skip()
 def test_no_username_or_password_or_form_not_submitted(configured_app):
     app = configured_app
 
@@ -70,10 +67,10 @@ def test_no_username_or_password_or_form_not_submitted(configured_app):
         assert not login_form.validate()
         assert not login_form.is_submitted()
 
-
-@pytest.mark.skip()
 def test_username_password_invalid(configured_app, mock_server_factory):
     app = configured_app
+    app.config.update(WTF_CSRF_ENABLED=False)
+
     server = mock_server_factory("ldap.mock")
     mockServerCls = Mock(return_value=server)
 
@@ -89,21 +86,23 @@ def test_username_password_invalid(configured_app, mock_server_factory):
             assert login_form.is_submitted()
             assert login_form.validate()
             entry = check_dit_fetch_entries(Form_Request_Obj(login_form))
-            assert entry is None
+            assert entry is False
             assert "Username and password not valid" in login_form.username.errors
 
     inner()
 
 
-@pytest.mark.skip()
+
 def test_user_no_access_permissions(configured_app, mock_server_factory):
     app = configured_app
+    app.config.update(WTF_CSRF_ENABLED=False)
+    
+    server = mock_server_factory("ldap.mock")
+    mockServerCls = Mock(return_value=server)
 
     InvenioLDAPClientUI(app)
     InvenioAccountsUI(app)
-
-    server = mock_server_factory("ldap.mock")
-    mockServerCls = Mock(return_value=server)
+    
 
     @patch("invenio_ldapclient.ext.Server", mockServerCls)
     def inner():
@@ -114,7 +113,7 @@ def test_user_no_access_permissions(configured_app, mock_server_factory):
             assert login_form.is_submitted()
             assert login_form.validate()
             entry = check_dit_fetch_entries(Form_Request_Obj(login_form))
-            assert entry is None
+            assert entry is False
 
             assert (
                 "Login failed (access permission).  Contact administrator."

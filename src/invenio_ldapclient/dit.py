@@ -85,6 +85,7 @@ def check_dit_fetch_entries(request_object):
             request_object.handle_passwd_invalid()
 
         hash_password(password)
+
         return False
 
     mail_attrib = cv("email_attribute")

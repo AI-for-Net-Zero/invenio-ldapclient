@@ -1,3 +1,2 @@
-include src/invenio_ldapclient/templates/invenio_accounts/*.html
-include src/invenio_ldapclient/templates/security/*.html
+graft src/invenio_ldapclient/templates/
 include src/unittests/resources/*
