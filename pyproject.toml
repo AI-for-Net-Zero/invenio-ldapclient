@@ -39,7 +39,7 @@ dev = ["pytest", "coverage",
        "sphinx", "pip-tools", "invenio-access", "ruff", "pylint"]
 
 [project.entry-points."invenio_base.apps"]
-invenio_ldapclient = "invenio_ldapclient:InvenioLDAPClient"
+invenio_ldapclient_ui = "invenio_ldapclient:InvenioLDAPClientUI"
 
 [build-system]
 requires = ["setuptools"]
