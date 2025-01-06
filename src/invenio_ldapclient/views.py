@@ -20,10 +20,12 @@ from .dit import check_dit_fetch_entries
 def login_ldap_ui():
     form = login_form_factory(current_app)()
 
+    form_request_object = Form_Request_Obj(form)
+
     if form.validate_on_submit():
-        entry = check_dit_fetch_entries(Form_Request_Obj(form))
+        entry = check_dit_fetch_entries(form_request_object)
         if entry:
-            user = find_or_register_user(Form_Request_Obj(form))
+            user = find_or_register_user(form_request_object)
             login_user(user)
             after_this_request(_commit)  # Calls db.session.commit()
             return redirect(get_post_login_redirect(form.next.data))
