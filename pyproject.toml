@@ -4,7 +4,7 @@ dynamic = ["version", "readme"]#, "dependencies"]
 license = {file = "LICENSE"}
 
 dependencies = [
-	     "invenio-accounts>=2.0.0",
+	     "invenio-accounts>=2.0.0,<5.1.8",
 	     "invenio-db>=1.0.2",
 	     "invenio-userprofiles>=2.0.0",
 	     "ldap3>=2.5.0",

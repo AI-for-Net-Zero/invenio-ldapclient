@@ -4,7 +4,12 @@ from flask import Flask
 from invenio_i18n import InvenioI18N
 from invenio_ldapclient import InvenioLDAPClientREST
 from invenio_accounts import InvenioAccountsREST
-from invenio_accounts.views.rest import create_blueprint
+
+import invenio_accounts
+if int(invenio_accounts.__version__.split(".")[0]) >= 5:
+    from invenio_accounts.views.rest import create_rest_blueprint as create_blueprint
+else:
+    from invenio_accounts.views.rest import create_blueprint
 
 # from invenio_accounts.views import blueprint
 from invenio_db import InvenioDB
