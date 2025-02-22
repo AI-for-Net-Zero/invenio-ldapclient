@@ -42,7 +42,7 @@ dev = ["pytest", "coverage",
 invenio_ldapclient_ui = "invenio_ldapclient:InvenioLDAPClientUI"
 
 [project.entry-points."invenio_base.api_apps"]
-invenio_ldapclient_api = "invenio_ldapclient:InvenioLDAPClientAPI"
+invenio_ldapclient_api = "invenio_ldapclient:InvenioLDAPClientREST"
 
 
 [build-system]
