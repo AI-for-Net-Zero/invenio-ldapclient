@@ -54,11 +54,10 @@ class InvenioLDAPClient(object):
                 server_kwargs=server_kwargs,
                 server_pool_kwargs=cv("server_pool_kwargs", app),
             )
+            app.extensions["invenio-ldapclient"] = state
         else:
-            raise RuntimeError("invenio-ldapclient: LDAP server info not provided")
-
-        app.extensions["invenio-ldapclient"] = state
-
+            app.extensions["invenio-ldapclient"] = None
+        
         app.config["SECURITY_CONFIRMABLE"] = False
         app.config["SECURITY_RECOVERABLE"] = False
         app.config["SECURITY_REGISTERABLE"] = False
