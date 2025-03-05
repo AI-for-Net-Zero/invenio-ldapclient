@@ -175,3 +175,6 @@ ACCOUNTS_REST_AUTH_VIEWS = {
     "sessions_list": "invenio_accounts.views.rest:SessionsListView",
     "sessions_item": "invenio_accounts.views.rest:SessionsItemView",
 }
+
+LDAPCLIENT_TEMPORARY_EMAIL_FIX = False
+LDAPCLIENT_TEMPORARY_EMAIL_FIX_DOMAIN = None

@@ -92,12 +92,15 @@ def check_dit_fetch_entries(request_object):
     try:
         email = entry.__getattribute__(mail_attrib)[0]
     except AttributeError:
-        # Email is required - but leave form.email = None, and
-        # pass a msg back to client via form.errors
-        request_object.handle_no_email()
-        return False
-    else:
-        request_object.set_email(email)
+        if cv("temporary_email_fix"):
+            email = username + "@" + cv("temporary_email_fix_domain")
+        else:
+            # Email is required - but leave form.email = None, and
+            # pass a msg back to client via form.errors
+            request_object.handle_no_email()
+            return False
+    
+    request_object.set_email(email)
 
     access_permitted = _is_access_permitted(username)
 

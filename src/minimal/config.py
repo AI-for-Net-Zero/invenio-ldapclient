@@ -16,3 +16,7 @@ LDAPCLIENT_GROUP_SEARCH_BASE = "dc=example,dc=com"
 LDAPCLIENT_GROUP_SEARCH_FILTERS = [
     lambda u: f"(&(objectclass=posixGroup)(|(cn=green)(cn=blue))(memberUid={u}))"
 ]
+
+
+LDAPCLIENT_TEMPORARY_EMAIL_FIX = True
+LDAPCLIENT_TEMPORARY_EMAIL_FIX_DOMAIN = "ic.ac.uk"
