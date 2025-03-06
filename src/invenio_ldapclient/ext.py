@@ -18,6 +18,14 @@ from .utils import config_value as cv
 from ldap3 import Server, ServerPool
 
 
+_default_messages = {
+    "NO_USERS": "Username and password not valid",
+    "DUP_USERS": "Login failed (duplicate username).  Contact administrator.",
+    "PASSWD": "Username and password invalid",
+    "NO_EMAIL": "User email not registered.",
+    "NO_ACCESS": "Login failed (access permission).  Contact administrator."
+}
+
 class _LDAPServers:
     def __init__(self, server_kwargs, server_pool_kwargs=None):
         """hosts is either tuple[str, int], tuple[str] or iterable of either of these
@@ -69,6 +77,10 @@ class InvenioLDAPClient(object):
         for k in dir(config):
             if k.startswith("LDAPCLIENT_"):
                 app.config.setdefault(k, getattr(config, k))
+
+        for key, value in _default_messages.items():
+            app.config.setdefault("LDAPCLIENT_MSG_" + key, value)
+
 
 
 class InvenioLDAPClientUI(InvenioLDAPClient):

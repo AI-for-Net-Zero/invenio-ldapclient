@@ -16,3 +16,13 @@ LDAPCLIENT_GROUP_SEARCH_BASE = "dc=example,dc=com"
 LDAPCLIENT_GROUP_SEARCH_FILTERS = [
     lambda u: f"(&(objectclass=posixGroup)(|(cn=green)(cn=blue))(memberUid={u}))"
 ]
+
+
+LDAPCLIENT_TEMPORARY_EMAIL_FIX = False
+LDAPCLIENT_TEMPORARY_EMAIL_FIX_DOMAIN = "ic.ac.uk"
+
+LDAPCLIENT_MSG_NO_USERS = "Woah! No users were found"
+LDAPCLIENT_MSG_DUP_USERS = "WOAH! Username matches multiple DIT entries"
+LDAPCLIENT_MSG_PASSWD = "Gah... Username & password invalid"
+LDAPCLIENT_MSG_NO_EMAIL = "Hmmm... DIT entry has no email address"
+LDAPCLIENT_MSG_NO_ACCESS = "Halt!  You do not have access"

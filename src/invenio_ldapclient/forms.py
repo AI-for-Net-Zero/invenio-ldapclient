@@ -7,10 +7,7 @@ from flask import request
 from flask_security.forms import Form, NextFormMixin
 from wtforms import PasswordField, StringField, SubmitField, validators
 
-from .utils import (
-    config_value as cv,
-)
-
+from .utils import config_value as cv
 
 def login_form_factory(app):
     """Inserts e.g., current_app, into local namespace of form class"""
@@ -55,20 +52,20 @@ class Form_Request_Obj(object):
         self.email = email
 
     def handle_no_users(self):
-        self.login_form.username.errors.append("Username and password not valid")
+        self.login_form.username.errors.append(cv("msg_no_users"))
 
     def handle_dup_users(self):
         self.login_form.username.errors.append(
-            "Login failed (duplicate username).  Contact administrator."
+            cv("msg_dup_users")
         )
 
     def handle_passwd_invalid(self):
-        self.login_form.username.errors.append("Username and password not valid")
+        self.login_form.username.errors.append(cv("msg_passwd"))
 
     def handle_no_email(self):
-        self.login_form.username.errors.append("User email not registered.")
+        self.login_form.username.errors.append(cv("msg_no_email"))
 
     def handle_access_not_permitted(self):
         self.login_form.username.errors.append(
-            "Login failed (access permission).  Contact administrator."
+            cv("msg_no_access")
         )
