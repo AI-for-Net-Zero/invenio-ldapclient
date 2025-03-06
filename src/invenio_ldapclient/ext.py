@@ -63,6 +63,7 @@ class InvenioLDAPClient(object):
         app.config["SECURITY_REGISTERABLE"] = False
         app.config["SECURITY_CHANGEABLE"] = False
         app.config["USERPROFILES_EMAIL_ENABLED"] = False
+        app.config["ACCOUNTS_LOCAL_LOGIN_ENABLED"] = True
 
     def init_config(self, app):
         for k in dir(config):
@@ -77,25 +78,12 @@ class InvenioLDAPClientUI(InvenioLDAPClient):
         super(InvenioLDAPClientUI, self).init_app(app)
 
         # Set invenio_accounts login-view config option
-        # ... config, view-function, template ...what else?
         app.config["ACCOUNTS_LOGIN_VIEW_FUNCTION"] = login_ldap_ui
-        app.config["ACCOUNTS_BASE_TEMPLATE"] = cv("base_template", app)
-        app.config["ACCOUNTS_COVER_TEMPLATE"] = cv("cover_template", app)
 
         # Registering blueprint to add templates to search path
         bp = Blueprint("invenio-ldapclient-ui", __name__, template_folder="templates")
         app.register_blueprint(bp)
-
-    def init_config(self, app):
-        """Initialize configuration."""
-        super(InvenioLDAPClientUI, self).init_config(app)
         
-        if "COVER_TEMPLATE" in app.config:
-            app.config.setdefault(
-                "LDAPCLIENT_BASE_TEMPLATE",
-                app.config["COVER_TEMPLATE"],
-            )        
-
 class InvenioLDAPClientREST(InvenioLDAPClient):
     def init_app(self, app):
         """Flask application initialization."""
