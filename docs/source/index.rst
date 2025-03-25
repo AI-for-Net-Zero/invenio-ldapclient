@@ -51,7 +51,8 @@ interested.
 .. toctree::
    :maxdepth: 1
 
-   contributing
-   changes
+
    license
-   authors
+
+.. `changes`
+.. `authors`

@@ -19,7 +19,7 @@ def _commit(response=None):
 
 
 def update_user(user, username, email, full_name=None):
-    user.email = email  # Email address needs to be in directory for login to succeed
+    user.email = email
 
     """
     Only update profile if these attribs are not already in app, since we can assume the user
@@ -72,6 +72,14 @@ def add_user(username, email, full_name=None):
 
 
 def find_or_register_user(request_object):
+    """
+    Searches the app database for matching username and returns user object, if found. 
+    Otherwise, adds user and email address obtained from directory.
+    
+    We assume (see dit module) that uid is a globally unique identifier for users in directory.
+
+    If user with username = uid is found, we return the user object, otherwise, we add and confirm them.
+    """
     username = request_object.get_username()
     email = request_object.get_email()
 
@@ -79,12 +87,6 @@ def find_or_register_user(request_object):
     # 1. First, by username
     user = User.query.filter_by(username=username).one_or_none()
 
-    # <--- We're currently assuming
-    #     form.username ---> (1 or 0) ---> uid (directory) ---> (1 or 0) ---> User.username, i.e.,
-    #
-    #     (1) uid is a globally unique identifier for users in directory (which would be
-    #         case when there is a single bind base
-    #     (2) usernames in app db strictly match uid's in directory
     #
     # Therefore, for the time being, search app db by email is superfluous.
     # --->

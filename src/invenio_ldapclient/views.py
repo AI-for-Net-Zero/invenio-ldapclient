@@ -1,4 +1,4 @@
-"""Invenio-LDAPClient login view."""
+"""Invenio-LDAPClient UI login view."""
 
 from __future__ import absolute_import, print_function
 
@@ -18,6 +18,9 @@ from .dit import check_dit_fetch_entries
 
 @anonymous_user_required
 def login_ldap_ui():
+    """
+    LDAP login view for UI applications.
+    """
     form = login_form_factory(current_app)()
 
     form_request_object = Form_Request_Obj(form)

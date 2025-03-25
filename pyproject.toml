@@ -34,9 +34,14 @@ classifiers=[
 name = "Galter Health Sciences Library & Learning Center"
 email = "galter-is@listserv.it.northwestern.edu"
 
+[[project.authors]]
+name = "Dept. of Aeronautics, Imperial College London"
+email = "lee.benson@imperial.ac.uk"
+
 [project.optional-dependencies]
 dev = ["pytest", "coverage",
-       "sphinx", "pip-tools", "invenio-access", "ruff", "pylint"]
+       "sphinx", "sphinx-rtd-theme",
+       "pip-tools", "invenio-access", "ruff", "pylint"]
 
 [project.entry-points."invenio_base.apps"]
 invenio_ldapclient_ui = "invenio_ldapclient:InvenioLDAPClientUI"
@@ -60,9 +65,6 @@ readme = {file = "README.rst"}
 
 [tool.pytest.ini_options]
 testpaths = ["src/unittests/"]
-
-[tool.coverage.run]
-omit = ["src/invenio_ldapclient/django/*"]
 
 #[tool.tox]
 #env_list =  ["3.9"]

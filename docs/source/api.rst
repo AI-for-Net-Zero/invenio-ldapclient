@@ -10,8 +10,17 @@ API Docs
 .. automodule:: invenio_ldapclient.ext
    :members:
 
-Views
------
 
 .. automodule:: invenio_ldapclient.views
    :members:
+            
+.. automodule:: invenio_ldapclient.views_rest
+   :members:
+
+.. automodule:: invenio_ldapclient.db
+   :members:
+
+.. automodule:: invenio_ldapclient.dit
+   :members:
+
+      

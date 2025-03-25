@@ -1,3 +1,5 @@
+"""Invenio-LDAPClient API login view."""
+
 from invenio_accounts.views.rest import (_abort,
                                          _commit,
                                          get_message,
@@ -14,6 +16,9 @@ from .db import find_or_register_user
 
 
 class LoginView(_LoginView):
+    """
+    LDAP login class-based view for Invenio REST API application.
+    """
     post_args = {
         "username": fields.String(required=True),
         "password": fields.String(required=True),
