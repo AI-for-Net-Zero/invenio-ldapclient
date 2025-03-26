@@ -78,7 +78,7 @@ def find_or_register_user(request_object):
     
     We assume (see dit module) that uid is a globally unique identifier for users in directory.
 
-    If user with username = uid is found, we return the user object, otherwise, we add and confirm them.
+    If user with ``username = uid`` is found, we return the user object, otherwise, we add and confirm them.
     """
     username = request_object.get_username()
     email = request_object.get_email()

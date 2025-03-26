@@ -167,7 +167,7 @@ LDAPCLIENT_GROUP_SEARCH_FILTERS = None
 """
 iter[Callable[[str],str]]
 
-each callable takes login_form.username and return str to pass to
+each callable takes login_form.username and returns str to pass to
 ldap3.Connection.search as search_filter argument when searching DIT for group with user as 
 member
 
@@ -180,7 +180,7 @@ E.g.,
                  lambda u : f'(&(memberUid={u})(objectClass=posixGroup)(cn=group2))']
 
 
-If ``None``, disallow authentication attempts
+If ``None``, all authentication attempts are disallowed
 """
 
 ACCOUNTS_REST_AUTH_VIEWS = {
@@ -202,14 +202,21 @@ Sets login view to ldap for REST API applications
 
 LDAPCLIENT_TEMPORARY_EMAIL_FIX = False
 """
-If directory search does not return an email address, authentication fails.  To disable this, set this to True and an email address will be constructed as <username>"@"LDAPCLIENT_TEMPORARY_EMAIL_FIX_DOMAIN
+If directory search does not return an email address, authentication fails.  To disable this, set this to True and an email address will be constructed as 
+
+.. code-block:: python
+
+	<username>"@"LDAPCLIENT_TEMPORARY_EMAIL_FIX_DOMAIN
+
 """
 
 LDAPCLIENT_TEMPORARY_EMAIL_FIX_DOMAIN = None
 """
-If 
+If
 
 .. code-block:: python
 
-	LDAPCLIENT_TEMPORARY_EMAIL_FIX = True, provide the domain here.
+	LDAPCLIENT_TEMPORARY_EMAIL_FIX = True
+
+then set this to your required email domain.
 """

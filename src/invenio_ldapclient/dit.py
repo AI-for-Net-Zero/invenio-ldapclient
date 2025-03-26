@@ -73,7 +73,10 @@ def check_dit_fetch_entries(request_object):
 
     Initial validations of request object have already been done: username & password provided, CSRF tokens match.
 
-    DIT is searched beneath LDAPCLIENT_USER_SEARCH_BASE with search filter LDAPCLIENT_USER_SEARCH_FILTER(username).  Additional kwargs to pass to ldap3.Connection.search can be provided through LDAPCLIENT_USER_SEARCH_KWARGS.
+    DIT is searched beneath ``LDAPCLIENT_USER_SEARCH_BASE`` with search filter 
+    ``LDAPCLIENT_USER_SEARCH_FILTER(request_object.get_username())``.  
+
+    Additional kwargs to pass to ldap3.Connection.search can be provided through LDAPCLIENT_USER_SEARCH_KWARGS.
 
     If the search returns no users, or more than one, this step fails and returns a customisable message to the client.
 
@@ -81,9 +84,9 @@ def check_dit_fetch_entries(request_object):
 
     Regardless of whether re-binding succeeds, we calculate the password hash to mitigate against timing attacks.
 
-    We then attempt to extract user's email address.  Under normal circumstances, if the email address is absent then authentication fails, returning a customisable message to the client.  However, if LDAPCLIENT_TEMPORARY_EMAIL_FIX evaluates to True, then an email address is constructed from the username and the domain given in LDAPCLIENT_TEMPORARY_EMAIL_FIX_DOMAIN.
+    We then attempt to extract user's email address.  Under normal circumstances, if the email address is absent then authentication fails, returning a customisable message to the client.  However, if ``LDAPCLIENT_TEMPORARY_EMAIL_FIX`` evaluates to True, then an email address is constructed from the username and the domain given in ``LDAPCLIENT_TEMPORARY_EMAIL_FIX_DOMAIN``.
 
-    Finally, we check if the user has been granted rights to access the app by performing a second search of the DIT parameterised by LDAPCLIENT_GROUP_SEARCH_BASE and LDAPCLIENT_GROUP_SEARCH_FILTERS.
+    Finally, we check if the user has been granted rights to access the app by performing a second search of the DIT parameterised by ``LDAPCLIENT_GROUP_SEARCH_BASE`` and ``LDAPCLIENT_GROUP_SEARCH_FILTERS``.
     """
     username = request_object.get_username()
     password = request_object.get_password()
